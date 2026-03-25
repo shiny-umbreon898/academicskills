@@ -1,12 +1,6 @@
 import React from 'react';
+import { VideoTemplate } from './Page1';
 
-function Page3() {
-    return (
-        <div>
-            <h1>Page Three</h1>
-            <p>This is a blank page (3).</p>
-        </div>
-    );
+export default function Page3() {
+    return <VideoTemplate contentId="page3" title="Video: Expert" />;
 }
-
-export default Page3;

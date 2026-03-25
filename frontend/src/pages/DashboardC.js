@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
+import { getCookie } from '../utils/cookies';
 
 function DashboardC({ navigate }) {
+    const [achievements, setAchievements] = useState({ completedCount: 0, level: 1 });
+    const [progressItems, setProgressItems] = useState({});
+
+    useEffect(() => {
+        const a = getCookie('achievements') || { completedCount: 0, level: 1 };
+        setAchievements(a);
+        const p = getCookie('progress') || {};
+        setProgressItems(p);
+    }, []);
+
     const cardStyle = {
         border: '1px solid #ccc',
         borderRadius: 8,
@@ -23,6 +34,29 @@ function DashboardC({ navigate }) {
     return (
         <div>
             <h1>Dashboard C</h1>
+
+            <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+                <div style={{ padding: 12, border: '1px solid #ddd', borderRadius: 8, minWidth: 180 }}>
+                    <h3>Achievements</h3>
+                    <div>Completed: {achievements.completedCount}</div>
+                    <div>Level: {achievements.level}</div>
+                </div>
+
+                <div style={{ padding: 12, border: '1px solid #ddd', borderRadius: 8 }}>
+                    <h3>Progress</h3>
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                        {['page1', 'page2', 'page3'].map(id => {
+                            const item = progressItems[id];
+                            return (
+                                <li key={id}>
+                                    {id} - {item && item.completed ? `Completed (score ${item.score ?? 0})` : 'Not completed'}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            </div>
+
             <p>Choose a page:</p>
             <div style={containerStyle}>
                 <div style={cardStyle} onClick={() => navigate('/page1')}>

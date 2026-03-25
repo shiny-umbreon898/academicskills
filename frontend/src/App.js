@@ -20,10 +20,10 @@ function App() {
 
     // ensure persistent user id cookie/localStorage exists — app no longer requires login
     useEffect(() => {
-        let uid = getCookie('fitlog_user_id');
+        let uid = getCookie('user_id');
         if (!uid) {
             uid = `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
-            setCookie('fitlog_user_id', uid);
+            setCookie('user_id', uid);
         }
         // store in localStorage for compatibility with components that expect user_id
         if (!localStorage.getItem('user_id')) {
