@@ -1,9 +1,7 @@
-// react hook for managing form state
-import { useState } from "react";
 import React from 'react';
 import './Dashboard.css';
 
-function Dashboard({ navigate }) {
+function DashboardB({ navigate }) {
     const cardStyle = {
         border: '1px solid #ccc',
         borderRadius: 8,
@@ -24,7 +22,7 @@ function Dashboard({ navigate }) {
 
     return (
         <div>
-            <h1>Dashboard A</h1>
+            <h1>Dashboard B</h1>
             <p>Choose a page:</p>
             <div style={containerStyle}>
                 <div style={cardStyle} onClick={() => navigate('/page1')}>
@@ -46,4 +44,4 @@ function Dashboard({ navigate }) {
     );
 }
 
-export default Dashboard;
+export default DashboardB;

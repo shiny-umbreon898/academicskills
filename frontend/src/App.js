@@ -1,72 +1,71 @@
 // default React app component from create-react-app
 import logo from './logo.svg';
 import './App.css';
+import React, { useEffect, useState } from 'react';
 
-// React Router component for handling navigation
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+// cookie helpers
+import { getCookie, setCookie } from './utils/cookies';
 
 // Page Components
-import Register from "./pages/Register";
-import Login from "./pages/Login";
-import Workouts from "./pages/Workouts";
-
 import Dashboard from "./pages/Dashboard";
-import Calendar from "./pages/Calendar";
-import Profile from "./pages/Profile";
+import DashboardB from "./pages/DashboardB";
+import DashboardC from "./pages/DashboardC";
+import Page1 from "./pages/Page1";
+import Page2 from "./pages/Page2";
+import Page3 from "./pages/Page3";
 
 function App() {
+    const [page, setPage] = useState('/');
+    const [dashboardVariant, setDashboardVariant] = useState('A');
 
-    // detect if user is looged in
-    const userId = localStorage.getItem("user_id");
+    // ensure persistent user id cookie/localStorage exists — app no longer requires login
+    useEffect(() => {
+        let uid = getCookie('fitlog_user_id');
+        if (!uid) {
+            uid = `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
+            setCookie('fitlog_user_id', uid);
+        }
+        // store in localStorage for compatibility with components that expect user_id
+        if (!localStorage.getItem('user_id')) {
+            localStorage.setItem('user_id', uid);
+        }
+    }, []);
 
-    // to log user out
-    const handleLogout = () => {
-        localStorage.removeItem("user_id");
-        alert("Logged out successfully");
-        window.location.href = "/login"; // redirect to login page
+    // function to navigate between pages
+    const navigate = (p) => {
+        setPage(p);
+        window.scrollTo(0,0);
+    };
+
+    // render the correct page component based on the current page
+    const renderPage = () => {
+        switch(page) {
+            case '/page1': return <Page1 />;
+            case '/page2': return <Page2 />;
+            case '/page3': return <Page3 />;
+            case '/':
+            default:
+                if (dashboardVariant === 'A') return <Dashboard navigate={navigate} />;
+                if (dashboardVariant === 'B') return <DashboardB navigate={navigate} />;
+                return <DashboardC navigate={navigate} />;
+        }
     }
 
     return (
+        <div className="App">
+            <h1>Dashboards</h1>
 
-        <Router /* enable nav without page refresh */ >
+            <nav>
+                <button onClick={() => { setDashboardVariant('A'); navigate('/'); }}>Dashboard A</button>
+                <button onClick={() => { setDashboardVariant('B'); navigate('/'); }}>Dashboard B</button>
+                <button onClick={() => { setDashboardVariant('C'); navigate('/'); }}>Dashboard C</button>
+            </nav>
 
-            <div className="App">
-
-                <h1>Fitlog</h1>
-
-                <nav>
-                    {userId ? ( // if user is logged in, show workouts and logout links
-                        <>
-                            <Link to="/">Dashboard</Link>
-                            <Link to="/calendar">Calendar</Link>
-                            <Link to="/workouts">Workouts</Link>
-                            <Link to="/profile">Profile</Link>
-                            <button onClick={handleLogout}>Logout</button>
-                        </>
-                    ) : (   //  default links for non-logged in users
-                        <>
-                            <Link to="/login">Login</Link>
-                            <Link to="/register">Register</Link>
-                        </>
-                    )}
-                </nav>
-
-                <Routes>
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/workouts" element={<Workouts />} />
-
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/calendar" element={<Calendar />} />
-
-                </Routes>
-
-            </div>
-
-        </Router>
+            <main>
+                {renderPage()}
+            </main>
+        </div>
     );
-
 }
 
 export default App;
