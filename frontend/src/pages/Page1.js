@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
 
-export function VideoTemplate({ contentId = 'page1', title = 'Video One' }) {
+export function VideoTemplate({ contentId = 'page1', title = 'Video One', maxScore = 10 }) {
     const [score, setScore] = useState(0);
     const [completed, setCompleted] = useState(false);
     const [message, setMessage] = useState('');
@@ -11,26 +11,37 @@ export function VideoTemplate({ contentId = 'page1', title = 'Video One' }) {
         const data = progress[contentId];
         if (data) {
             setCompleted(!!data.completed);
-            setScore(data.score ?? 0);
+            setScore(Number(data.score) || 0);
         }
     }, [contentId]);
 
-    const markComplete = () => {
+    const saveProgress = (complete = false) => {
+        // clamp score to allowed range
+        let s = Number(score) || 0;
+        if (s < 0) s = 0;
+        if (s > maxScore) s = maxScore;
+
         const progress = getCookie('progress') || {};
-        progress[contentId] = { completed: true, score: Number(score) || 0, timestamp: Date.now() };
+        progress[contentId] = { completed: !!complete, score: s, timestamp: Date.now() };
         setCookie('progress', progress);
 
-        // update achievements summary
-        const summary = getCookie('achievements') || { completedCount: 0, level: 1 };
-        // recompute completedCount reliably
+        // recompute achievements
         const all = getCookie('progress') || {};
         const completedCount = Object.values(all).filter(v => v && v.completed).length;
-        summary.completedCount = completedCount;
-        summary.level = Math.floor(completedCount / 3) + 1; // level up every 3 items
+        const summary = { completedCount, level: Math.floor(completedCount / 3) + 1 };
         setCookie('achievements', summary);
 
-        setCompleted(true);
-        setMessage('Marked complete');
+        setCompleted(!!complete);
+        setScore(s);
+        setMessage(complete ? 'Marked complete' : 'Progress saved');
+    };
+
+    const markComplete = () => {
+        saveProgress(true);
+    };
+
+    const savePartial = () => {
+        saveProgress(false);
     };
 
     const reset = () => {
@@ -61,8 +72,10 @@ export function VideoTemplate({ contentId = 'page1', title = 'Video One' }) {
 
             <div style={{ marginTop: 12 }}>
                 <label>
-                    Score: <input type="number" value={score} onChange={e => setScore(e.target.value)} min={0} />
+                    Score: <input type="number" value={score} onChange={e => setScore(e.target.value)} min={0} max={maxScore} />
+                    <span style={{ marginLeft: 8, color: '#666' }}>/ {maxScore}</span>
                 </label>
+                <button onClick={savePartial} style={{ marginLeft: 8 }}>Save Progress</button>
                 <button onClick={markComplete} style={{ marginLeft: 8 }}>Mark Complete</button>
                 <button onClick={reset} style={{ marginLeft: 8 }}>Reset</button>
             </div>
@@ -76,5 +89,5 @@ export function VideoTemplate({ contentId = 'page1', title = 'Video One' }) {
 }
 
 export default function Page1() {
-    return <VideoTemplate contentId="page1" title="Video: Introduction" />;
+    return <VideoTemplate contentId="page1" title="Video: Introduction" maxScore={10} />;
 }
