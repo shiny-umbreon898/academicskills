@@ -25,7 +25,7 @@ function Dashboard({ navigate }) {
 
         const getButtonLabel = () => {
             if (!item) return 'Start';
-            if (item.completed) return 'Completed ?';
+            if (item.completed) return 'Completed';
             return 'Continue';
         };
 
@@ -39,7 +39,7 @@ function Dashboard({ navigate }) {
             <div key={contentId} className="page-card" onClick={() => navigate(`/${contentId}`)}>
                 <h3>{title}</h3>
                 <div className={`page-card-status ${isCompleted ? 'status-completed' : item ? 'status-in-progress' : 'status-not-started'}`}>
-                    {isCompleted && '? Completed'}
+                    {isCompleted && 'Completed'}
                     {item && !isCompleted && 'In Progress'}
                     {!item && 'Not Started'}
                 </div>
@@ -74,7 +74,7 @@ function Dashboard({ navigate }) {
                                 key={id}
                                 className={`badge ${progressItems[id]?.completed ? 'completed' : 'incomplete'}`}
                             >
-                                {progressItems[id]?.completed ? '?' : ''}
+                                {progressItems[id]?.completed ? '' : ''}
                             </span>
                         ))}
                     </div>
@@ -89,7 +89,7 @@ function Dashboard({ navigate }) {
                             const pct = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
                             return (
                                 <li key={id}>
-                                    <strong>{id}:</strong> {item && item.completed ? `? Completed (${item.score})` : `${pct}% complete`}
+                                    <strong>{id}:</strong> {item && item.completed ? `Completed (${item.score})` : `${pct}% complete`}
                                 </li>
                             );
                         })}
