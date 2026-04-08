@@ -1,37 +1,57 @@
-// react hook for managing form state
+// Dashboard page: shows levels, achievements, overall and per-page progress
 import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
 import { getCookie } from '../utils/cookies';
 
-// mapping for max scores per content
+// Max scores per content item
 const MAX_SCORES = { page1: 10, page2: 5, page3: 5 };
+// Compute total possible score from MAX_SCORES to keep values consistent
+const TOTAL_MAX_SCORE = Object.values(MAX_SCORES).reduce((a, b) => a + b, 0);
+const EXP_PER_LEVEL = 5; // base experience required per level (scaled by level)
 
 function Dashboard({ navigate }) {
-    const [achievements, setAchievements] = useState({ completedCount: 0, level: 1 });
+    // achievements holds completedCount, level and totalExp (total experience earned)
+    const [achievements, setAchievements] = useState({ completedCount: 0, level: 1, totalExp: 0 });
     const [progressItems, setProgressItems] = useState({});
 
+    // Load stored state from cookies on mount
     useEffect(() => {
-        const a = getCookie('achievements') || { completedCount: 0, level: 1 };
+        const a = getCookie('achievements') || { completedCount: 0, level: 1, totalExp: 0 };
         setAchievements(a);
         const p = getCookie('progress') || {};
         setProgressItems(p);
     }, []);
 
-    // Calculate overall progress percentage
+    // Calculate overall progress as percent of total score
     const calculateOverallProgress = () => {
-        const totalMaxScore = Object.values(MAX_SCORES).reduce((a, b) => a + b, 0);
-        let totalScore = 0;
-        Object.keys(MAX_SCORES).forEach(id => {
+        const totalScore = Object.keys(MAX_SCORES).reduce((sum, id) => {
             const item = progressItems[id];
-            totalScore += item ? Number(item.score || 0) : 0;
-        });
-        return Math.round((totalScore / totalMaxScore) * 100);
+            return sum + (item ? Number(item.score || 0) : 0);
+        }, 0);
+        if (TOTAL_MAX_SCORE === 0) return 0;
+        return Math.round((totalScore / TOTAL_MAX_SCORE) * 100);
+    };
+
+    // Calculate how much EXP is needed to reach the next level
+    const calculateExpForNextLevel = () => {
+        const totalExp = Number(achievements.totalExp || 0);
+        const currentLevel = Math.max(1, Number(achievements.level || 1));
+        const expRequiredThisLevel = currentLevel * EXP_PER_LEVEL;
+        // How much EXP has been accumulated into the current level
+        const expInCurrentLevel = totalExp % expRequiredThisLevel;
+        const expNeeded = expRequiredThisLevel - expInCurrentLevel;
+        return expNeeded;
     };
 
     const overallProgress = calculateOverallProgress();
-    const circumference = 2 * Math.PI * 52;
+    const expForNext = calculateExpForNextLevel();
+
+    // SVG circle math
+    const RADIUS = 52;
+    const circumference = 2 * Math.PI * RADIUS;
     const strokeDashoffset = circumference - (overallProgress / 100) * circumference;
 
+    // Render a single page card (status, linear progress, score, action button)
     const renderPageCard = (contentId, title) => {
         const item = progressItems[contentId];
         const isCompleted = item && item.completed;
@@ -53,18 +73,24 @@ function Dashboard({ navigate }) {
         return (
             <div key={contentId} className="page-card" onClick={() => navigate(`/${contentId}`)}>
                 <h3>{title}</h3>
+
+                {/* status line */}
                 <div className={`page-card-status ${isCompleted ? 'status-completed' : item ? 'status-in-progress' : 'status-not-started'}`}>
                     {isCompleted && '? Completed'}
                     {item && !isCompleted && 'In Progress'}
                     {!item && 'Not Started'}
                 </div>
+
+                {/* linear progress bar: red fill that turns grey when completed */}
                 <div className="page-progress-bar">
                     <div 
                         className={`page-progress-fill ${isCompleted ? 'completed' : ''}`}
                         style={{ width: `${percent}%` }}
                     />
                 </div>
+
                 <div className="page-card-score">Score: {item ? item.score : 0} / {max} ({percent}%)</div>
+
                 <button
                     className={`page-card-button ${getButtonClass()}`}
                     onClick={(e) => {
@@ -82,32 +108,32 @@ function Dashboard({ navigate }) {
         <div>
             <h1>Dashboard</h1>
 
-            <div className="circular-progress-wrapper">
-                <div className="circular-progress">
-                    <svg viewBox="0 0 120 120">
-                        <circle
-                            className="circular-progress-circle circular-progress-bg"
-                            cx="60"
-                            cy="60"
-                            r="52"
-                        />
-                        <circle
-                            className="circular-progress-circle circular-progress-fill"
-                            cx="60"
-                            cy="60"
-                            r="52"
-                            style={{ strokeDasharray: circumference, strokeDashoffset }}
-                        />
-                    </svg>
-                    <div className="circular-progress-text">{overallProgress}%</div>
-                    <div className="circular-progress-label">Overall Progress</div>
-                </div>
-            </div>
-
-            <div className="dashboard-header">
-                <div className="dashboard-panel">
-                    <h3>Level & Achievements</h3>
+            {/* Progress elements organized into 4 subdivs: level, badges, overall, pages */}
+            <div className="progress-elements-wrapper">
+                {/* 1) Level & Experience */}
+                <div className="progress-element level-section">
+                    <h3>Level & Experience</h3>
                     <div className="level-display">Level {achievements.level}</div>
+
+                    {/* EXP bar shows progress inside the current level */}
+                    <div className="exp-info">
+                        <div className="exp-bar-container">
+                            {/* guard against division by zero */}
+                            <div
+                                className="exp-bar-fill"
+                                style={{
+                                    width: `${( (Number(achievements.totalExp || 0) % (Number(achievements.level || 1) * EXP_PER_LEVEL)) / (Number(achievements.level || 1) * EXP_PER_LEVEL) ) * 100}%`
+                                }}
+                            />
+                        </div>
+                        <div className="exp-text">EXP: {Number(achievements.totalExp || 0) % (Number(achievements.level || 1) * EXP_PER_LEVEL)} / {Number(achievements.level || 1) * EXP_PER_LEVEL}</div>
+                        <div className="exp-next">Next Level: {expForNext} EXP needed</div>
+                    </div>
+                </div>
+
+                {/* 2) Achievements / Badges */}
+                <div className="progress-element badges-section">
+                    <h3>Achievements</h3>
                     <div style={{ textAlign: 'center', fontSize: '14px', color: '#666', marginBottom: '12px' }}>
                         Completed: {achievements.completedCount}/3
                     </div>
@@ -117,14 +143,38 @@ function Dashboard({ navigate }) {
                                 key={id}
                                 className={`badge ${progressItems[id]?.completed ? 'completed' : 'incomplete'}`}
                             >
-                                {progressItems[id]?.completed ? '?' : ''} 
+                                {progressItems[id]?.completed ? '?' : ''}
                             </span>
                         ))}
                     </div>
                 </div>
 
-                <div className="dashboard-panel">
-                    <h3>Progress</h3>
+                {/* 3) Overall Progress (circular) */}
+                <div className="progress-element overall-section">
+                    <h3>Overall Progress</h3>
+                    <div className="circular-progress">
+                        <svg viewBox="0 0 120 120">
+                            <circle
+                                className="circular-progress-circle circular-progress-bg"
+                                cx="60"
+                                cy="60"
+                                r={RADIUS}
+                            />
+                            <circle
+                                className="circular-progress-circle circular-progress-fill"
+                                cx="60"
+                                cy="60"
+                                r={RADIUS}
+                                style={{ strokeDasharray: circumference, strokeDashoffset }}
+                            />
+                        </svg>
+                        <div className="circular-progress-text">{overallProgress}%</div>
+                    </div>
+                </div>
+
+                {/* 4) Page Progress List */}
+                <div className="progress-element pages-section">
+                    <h3>Page Progress</h3>
                     <ul className="progress-list">
                         {['page1', 'page2', 'page3'].map(id => {
                             const item = progressItems[id];
@@ -140,6 +190,7 @@ function Dashboard({ navigate }) {
                 </div>
             </div>
 
+            {/* Page cards below the progress elements */}
             <div className="page-cards-container">
                 {renderPageCard('page1', 'Page One')}
                 {renderPageCard('page2', 'Page Two')}

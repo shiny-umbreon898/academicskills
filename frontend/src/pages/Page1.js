@@ -34,6 +34,63 @@ export function VideoTemplate({ contentId = 'page1', title = 'Video One', maxSco
         setCompleted(!!complete);
         setScore(s);
         setMessage(complete ? 'Marked complete' : 'Progress saved');
+
+        // trigger confetti if completing
+        if (complete && !completed) {
+            triggerConfetti();
+        }
+    };
+
+    const triggerConfetti = () => {
+        if (typeof window !== 'undefined' && window.document) {
+            const canvas = document.createElement('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '9999';
+            document.body.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            const particles = [];
+
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: -10,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: Math.random() * 5 + 3,
+                    color: ['#dc143c', '#FFD700', '#4CAF50', '#2196F3'][Math.floor(Math.random() * 4)],
+                    size: Math.random() * 4 + 2,
+                });
+            }
+
+            const animate = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let hasParticles = false;
+
+                particles.forEach(p => {
+                    if (p.y < canvas.height) {
+                        p.y += p.vy;
+                        p.x += p.vx;
+                        p.vy += 0.1; // gravity
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(p.x, p.y, p.size, p.size);
+                        hasParticles = true;
+                    }
+                });
+
+                if (hasParticles) {
+                    requestAnimationFrame(animate);
+                } else {
+                    document.body.removeChild(canvas);
+                }
+            };
+
+            animate();
+        }
     };
 
     const markComplete = () => {
