@@ -4,7 +4,7 @@ import { getCookie } from '../utils/cookies';
 
 const MAX_SCORES = { page1: 10, page2: 5, page3: 5 };
 
-function DashboardC({ navigate }) {
+function Dashboard({ navigate }) {
     const [achievements, setAchievements] = useState({ completedCount: 0, level: 1 });
     const [progressItems, setProgressItems] = useState({});
 
@@ -37,7 +37,7 @@ function DashboardC({ navigate }) {
             <div key={contentId} className="page-card" onClick={() => navigate(`/${contentId}`)}>
                 <h3>{title}</h3>
                 <div className={`page-card-status ${isCompleted ? 'status-completed' : item ? 'status-in-progress' : 'status-not-started'}`}>
-                    {isCompleted && '? Completed'}
+                    {isCompleted && 'Completed'}
                     {item && !isCompleted && 'In Progress'}
                     {!item && 'Not Started'}
                 </div>
@@ -57,7 +57,7 @@ function DashboardC({ navigate }) {
 
     return (
         <div>
-            <h1>Dashboard C</h1>
+            <h1>Dashboard</h1>
 
             <div className="dashboard-header">
                 <div className="dashboard-panel">
@@ -72,7 +72,7 @@ function DashboardC({ navigate }) {
                                 key={id}
                                 className={`badge ${progressItems[id]?.completed ? 'completed' : 'incomplete'}`}
                             >
-                                {progressItems[id]?.completed ? '?' : ''}
+                                {progressItems[id]?.completed ? '!' : ''}
                             </span>
                         ))}
                     </div>
@@ -87,7 +87,7 @@ function DashboardC({ navigate }) {
                             const pct = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
                             return (
                                 <li key={id}>
-                                    <strong>{id}:</strong> {item && item.completed ? `? Completed (${item.score})` : `${pct}% complete`}
+                                    <strong>{id}:</strong> {item && item.completed ? `Completed (${item.score})` : `${pct}% complete`}
                                 </li>
                             );
                         })}
@@ -104,4 +104,4 @@ function DashboardC({ navigate }) {
     );
 }
 
-export default DashboardC;
+export default Dashboard;

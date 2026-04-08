@@ -8,15 +8,12 @@ import { getCookie, setCookie } from './utils/cookies';
 
 // Page Components
 import Dashboard from "./pages/Dashboard";
-import DashboardB from "./pages/DashboardB";
-import DashboardC from "./pages/DashboardC";
 import Page1 from "./pages/Page1";
 import Page2 from "./pages/Page2";
 import Page3 from "./pages/Page3";
 
 function App() {
     const [page, setPage] = useState('/');
-    const [dashboardVariant, setDashboardVariant] = useState('A');
 
     // ensure persistent user id cookie/localStorage exists — app no longer requires login
     useEffect(() => {
@@ -45,20 +42,16 @@ function App() {
             case '/page3': return <Page3 />;
             case '/':
             default:
-                if (dashboardVariant === 'A') return <Dashboard navigate={navigate} />;
-                if (dashboardVariant === 'B') return <DashboardB navigate={navigate} />;
-                return <DashboardC navigate={navigate} />;
+                return <Dashboard navigate={navigate} />;
         }
     }
 
     return (
         <div className="App">
-            <h1>Dashboards</h1>
+            <h1>Academic Skills</h1>
 
             <nav>
-                <button onClick={() => { setDashboardVariant('A'); navigate('/'); }}>Dashboard A</button>
-                <button onClick={() => { setDashboardVariant('B'); navigate('/'); }}>Dashboard B</button>
-                <button onClick={() => { setDashboardVariant('C'); navigate('/'); }}>Dashboard C</button>
+                <button onClick={() => navigate('/')}>Dashboard</button>
             </nav>
 
             <main>

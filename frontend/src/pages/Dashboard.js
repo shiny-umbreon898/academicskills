@@ -17,6 +17,21 @@ function Dashboard({ navigate }) {
         setProgressItems(p);
     }, []);
 
+    // Calculate overall progress percentage
+    const calculateOverallProgress = () => {
+        const totalMaxScore = Object.values(MAX_SCORES).reduce((a, b) => a + b, 0);
+        let totalScore = 0;
+        Object.keys(MAX_SCORES).forEach(id => {
+            const item = progressItems[id];
+            totalScore += item ? Number(item.score || 0) : 0;
+        });
+        return Math.round((totalScore / totalMaxScore) * 100);
+    };
+
+    const overallProgress = calculateOverallProgress();
+    const circumference = 2 * Math.PI * 52;
+    const strokeDashoffset = circumference - (overallProgress / 100) * circumference;
+
     const renderPageCard = (contentId, title) => {
         const item = progressItems[contentId];
         const isCompleted = item && item.completed;
@@ -25,7 +40,7 @@ function Dashboard({ navigate }) {
 
         const getButtonLabel = () => {
             if (!item) return 'Start';
-            if (item.completed) return 'Completed';
+            if (item.completed) return 'Completed ?';
             return 'Continue';
         };
 
@@ -39,9 +54,15 @@ function Dashboard({ navigate }) {
             <div key={contentId} className="page-card" onClick={() => navigate(`/${contentId}`)}>
                 <h3>{title}</h3>
                 <div className={`page-card-status ${isCompleted ? 'status-completed' : item ? 'status-in-progress' : 'status-not-started'}`}>
-                    {isCompleted && 'Completed'}
+                    {isCompleted && '? Completed'}
                     {item && !isCompleted && 'In Progress'}
                     {!item && 'Not Started'}
+                </div>
+                <div className="page-progress-bar">
+                    <div 
+                        className={`page-progress-fill ${isCompleted ? 'completed' : ''}`}
+                        style={{ width: `${percent}%` }}
+                    />
                 </div>
                 <div className="page-card-score">Score: {item ? item.score : 0} / {max} ({percent}%)</div>
                 <button
@@ -59,7 +80,29 @@ function Dashboard({ navigate }) {
 
     return (
         <div>
-            <h1>Dashboard A</h1>
+            <h1>Dashboard</h1>
+
+            <div className="circular-progress-wrapper">
+                <div className="circular-progress">
+                    <svg viewBox="0 0 120 120">
+                        <circle
+                            className="circular-progress-circle circular-progress-bg"
+                            cx="60"
+                            cy="60"
+                            r="52"
+                        />
+                        <circle
+                            className="circular-progress-circle circular-progress-fill"
+                            cx="60"
+                            cy="60"
+                            r="52"
+                            style={{ strokeDasharray: circumference, strokeDashoffset }}
+                        />
+                    </svg>
+                    <div className="circular-progress-text">{overallProgress}%</div>
+                    <div className="circular-progress-label">Overall Progress</div>
+                </div>
+            </div>
 
             <div className="dashboard-header">
                 <div className="dashboard-panel">
@@ -74,7 +117,7 @@ function Dashboard({ navigate }) {
                                 key={id}
                                 className={`badge ${progressItems[id]?.completed ? 'completed' : 'incomplete'}`}
                             >
-                                {progressItems[id]?.completed ? '' : ''}
+                                {progressItems[id]?.completed ? '?' : ''} 
                             </span>
                         ))}
                     </div>
@@ -89,7 +132,7 @@ function Dashboard({ navigate }) {
                             const pct = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
                             return (
                                 <li key={id}>
-                                    <strong>{id}:</strong> {item && item.completed ? `Completed (${item.score})` : `${pct}% complete`}
+                                    <strong>{id}:</strong> {item && item.completed ? `? Completed (${item.score})` : `${pct}% complete`}
                                 </li>
                             );
                         })}

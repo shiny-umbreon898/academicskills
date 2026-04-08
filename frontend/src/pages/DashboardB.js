@@ -4,7 +4,7 @@ import { getCookie } from '../utils/cookies';
 
 const MAX_SCORES = { page1: 10, page2: 5, page3: 5 };
 
-function DashboardB({ navigate }) {
+function Dashboard({ navigate }) {
     const [achievements, setAchievements] = useState({ completedCount: 0, level: 1 });
     const [progressItems, setProgressItems] = useState({});
 
@@ -57,7 +57,7 @@ function DashboardB({ navigate }) {
 
     return (
         <div>
-            <h1>Dashboard B</h1>
+            <h1>Dashboard</h1>
 
             <div className="dashboard-header">
                 <div className="dashboard-panel">
@@ -72,7 +72,7 @@ function DashboardB({ navigate }) {
                                 key={id}
                                 className={`badge ${progressItems[id]?.completed ? 'completed' : 'incomplete'}`}
                             >
-                                {progressItems[id]?.completed ? '?' : ''}
+                                {progressItems[id]?.completed ? '!' : ''}
                             </span>
                         ))}
                     </div>
@@ -87,7 +87,7 @@ function DashboardB({ navigate }) {
                             const pct = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
                             return (
                                 <li key={id}>
-                                    <strong>{id}:</strong> {item && item.completed ? `? Completed (${item.score})` : `${pct}% complete`}
+                                    <strong>{id}:</strong> {item && item.completed ? `Completed (${item.score})` : `${pct}% complete`}
                                 </li>
                             );
                         })}
@@ -104,4 +104,4 @@ function DashboardB({ navigate }) {
     );
 }
 
-export default DashboardB;
+export default Dashboard;
