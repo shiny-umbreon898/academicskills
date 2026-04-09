@@ -258,11 +258,31 @@ main {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .page-card:hover {
   box-shadow: 0 4px 12px rgba(220, 20, 60, 0.2);
   border-color: #dc143c;
+}
+
+/* Page Card Thumbnail */
+.page-card-thumbnail {
+  width: 100%;
+  height: 150px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-card-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .page-card h3 {
@@ -375,6 +395,10 @@ main {
     gap: 20px;
   }
 
+  .page-card-thumbnail {
+    height: 180px;
+  }
+
   nav {
     padding: 12px 20px;
     gap: 16px;
@@ -404,6 +428,10 @@ main {
     gap: 24px;
   }
 
+  .page-card-thumbnail {
+    height: 200px;
+  }
+
   main {
     padding: 24px;
     max-width: 1400px;
@@ -415,6 +443,17 @@ main {
     padding: 24px;
     font-size: 32px;
   }
+}
+
+/* H5P Embed Styling */
+.h5p-iframe-wrapper {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.h5p-iframe-wrapper iframe {
+  box-shadow: none;
 }
 
 /* Video Page Styles */
@@ -532,6 +571,10 @@ video {
 
   .page-card h3 {
     font-size: 16px;
+  }
+
+  .page-card-thumbnail {
+    height: 120px;
   }
 
   .level-display {

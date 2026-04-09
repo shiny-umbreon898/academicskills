@@ -1,15 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
 
+// H5P content IDs and configuration for each page
+// Configure with your actual H5P content IDs from your H5P server
+const H5P_CONFIG = {
+    page1: {
+        contentId: 1, // Replace with your H5P content ID
+        url: 'https://h5p.example.com/h5p/embed/1', // Replace with H5P server URL
+        thumbnail: null // or path to thumbnail image
+    },
+    page2: {
+        contentId: 2,
+        url: 'https://h5p.example.com/h5p/embed/2',
+        thumbnail: null
+    },
+    page3: {
+        contentId: 3,
+        url: 'https://h5p.example.com/h5p/embed/3',
+        thumbnail: null
+    }
+};
+
 // VideoTemplate is a reusable component used by Page1, Page2 and Page3
-// It automatically saves partial scores and marks the content completed when
-// the score reaches the configured maxScore. When content is completed it
-// awards experience (EXP) and updates the achievements cookie exactly once
-// per content item using the awardedExp flag stored with the content progress.
+// It displays an H5P interactive video and automatically saves partial scores
+// and marks the content completed when the score reaches the configured maxScore.
+// When content is completed it awards experience (EXP) and updates the achievements
+// cookie exactly once per content item using the awardedExp flag stored with the
+// content progress.
 export function VideoTemplate({ contentId = 'page1', title = 'Video One', maxScore = 10 }) {
     const [score, setScore] = useState(0);
     const [completed, setCompleted] = useState(false);
     const [message, setMessage] = useState('');
+    const [h5pReady, setH5pReady] = useState(false);
 
     // Load existing progress on mount
     useEffect(() => {
@@ -19,7 +41,26 @@ export function VideoTemplate({ contentId = 'page1', title = 'Video One', maxSco
             setCompleted(!!data.completed);
             setScore(Number(data.score) || 0);
         }
+
+        // Load H5P library if not already loaded
+        loadH5PLibrary();
     }, [contentId]);
+
+    // Helper: Load the H5P library from CDN
+    const loadH5PLibrary = () => {
+        if (window.H5P) {
+            setH5pReady(true);
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://h5p.example.com/h5p/js/h5p-embed.js';
+        script.async = true;
+        script.onload = () => {
+            setH5pReady(true);
+        };
+        document.body.appendChild(script);
+    };
 
     // Helper: persist progress object back to cookies
     const persistProgress = (progress) => {
@@ -141,15 +182,42 @@ export function VideoTemplate({ contentId = 'page1', title = 'Video One', maxSco
         setMessage('Progress reset');
     };
 
+    const config = H5P_CONFIG[contentId];
+
     return (
         <div>
             <h1>{title}</h1>
-            <div style={{ maxWidth: 800, background: '#111', color: '#fff', padding: 10, borderRadius: 8 }}>
-                {/* video placeholder - user can replace src with real URL */}
-                <video style={{ width: '100%' }} controls>
-                    <source src="" type="video/mp4" />
-                    Your browser does not support the video tag.
-                </video>
+
+            {/* H5P Interactive Video Container */}
+            <div style={{ maxWidth: 900, background: '#fff', padding: 16, borderRadius: 8, marginBottom: 16 }}>
+                {h5pReady ? (
+                    <div
+                        className="h5p-iframe-wrapper"
+                        style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}
+                    >
+                        <iframe
+                            src={config?.url}
+                            allowFullScreen
+                            title={`H5P Interactive Content - ${contentId}`}
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                border: 'none',
+                                borderRadius: 8
+                            }}
+                        />
+                    </div>
+                ) : (
+                    <div style={{ padding: 20, textAlign: 'center', color: '#999' }}>
+                        <p>Loading H5P content...</p>
+                        <p style={{ fontSize: 12 }}>
+                            <strong>Note:</strong> Configure H5P_CONFIG with your H5P server URL and content IDs.
+                        </p>
+                    </div>
+                )}
             </div>
 
             <div style={{ marginTop: 12 }}>

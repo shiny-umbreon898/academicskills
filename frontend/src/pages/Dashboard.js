@@ -9,6 +9,23 @@ const MAX_SCORES = { page1: 10, page2: 5, page3: 5 };
 const TOTAL_MAX_SCORE = Object.values(MAX_SCORES).reduce((a, b) => a + b, 0);
 const EXP_PER_LEVEL = 5; // base experience required per level (scaled by level)
 
+// Content configuration including thumbnails
+// Set thumbnail paths to display images on dashboard cards
+const CONTENT_CONFIG = {
+    page1: {
+        title: 'Page One',
+        thumbnail: '/thumbnails/page1.png' // Update with actual thumbnail path or null for blank placeholder
+    },
+    page2: {
+        title: 'Page Two',
+        thumbnail: '/thumbnails/page2.png'
+    },
+    page3: {
+        title: 'Page Three',
+        thumbnail: '/thumbnails/page3.png'
+    }
+};
+
 function Dashboard({ navigate }) {
     // achievements holds completedCount, level and totalExp (total experience earned)
     const [achievements, setAchievements] = useState({ completedCount: 0, level: 1, totalExp: 0 });
@@ -71,12 +88,14 @@ function Dashboard({ navigate }) {
     const circumference = 2 * Math.PI * RADIUS;
     const strokeDashoffset = circumference - (overallProgress / 100) * circumference;
 
-    // Render a single page card (status, linear progress, score, action button)
+    // Render a single page card with thumbnail, status, linear progress, score, and action button
     const renderPageCard = (contentId, title) => {
         const item = progressItems[contentId];
         const isCompleted = item && item.completed;
         const max = MAX_SCORES[contentId] || 10;
         const percent = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
+        const config = CONTENT_CONFIG[contentId];
+        const thumbnail = config?.thumbnail;
 
         const getButtonLabel = () => {
             if (!item) return 'Start';
@@ -92,6 +111,17 @@ function Dashboard({ navigate }) {
 
         return (
             <div key={contentId} className="page-card" onClick={() => navigate(`/${contentId}`)}>
+                {/* Thumbnail image or blank placeholder */}
+                <div className="page-card-thumbnail">
+                    {thumbnail ? (
+                        <img src={thumbnail} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                        <div style={{ width: '100%', height: '100%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
+                            No Image
+                        </div>
+                    )}
+                </div>
+
                 <h3>{title}</h3>
 
                 {/* status line */}
@@ -104,7 +134,7 @@ function Dashboard({ navigate }) {
                 {/* linear progress bar: red fill that turns grey when completed */}
                 <div className="page-progress-bar">
                     <div 
-                        className={`page-progress-fill ${isCompleted ? 'Completed' : ''}`}
+                        className={`page-progress-fill ${isCompleted ? 'completed' : ''}`}
                         style={{ width: `${percent}%` }}
                     />
                 </div>
