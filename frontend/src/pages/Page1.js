@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
 
+// VideoTemplate is a reusable component used by Page1, Page2 and Page3
+// It automatically saves partial scores and marks the content completed when
+// the score reaches the configured maxScore. When content is completed it
+// awards experience (EXP) and updates the achievements cookie exactly once
+// per content item using the awardedExp flag stored with the content progress.
 export function VideoTemplate({ contentId = 'page1', title = 'Video One', maxScore = 10 }) {
     const [score, setScore] = useState(0);
     const [completed, setCompleted] = useState(false);
     const [message, setMessage] = useState('');
 
+    // Load existing progress on mount
     useEffect(() => {
         const progress = getCookie('progress') || {};
         const data = progress[contentId];
@@ -15,101 +21,120 @@ export function VideoTemplate({ contentId = 'page1', title = 'Video One', maxSco
         }
     }, [contentId]);
 
-    const saveProgress = (complete = false) => {
-        // clamp score to allowed range
-        let s = Number(score) || 0;
+    // Helper: persist progress object back to cookies
+    const persistProgress = (progress) => {
+        setCookie('progress', progress);
+        // also write a small localStorage key to allow other tabs/components to detect an update
+        try {
+            localStorage.setItem('progress_updated_at', String(Date.now()));
+            // dispatch a custom event so same-tab listeners can react immediately
+            window.dispatchEvent(new Event('progress_updated'));
+        } catch (e) {
+            // ignore storage errors
+        }
+    };
+
+    // Award experience for a completion only once per content item.
+    // Stores awardedExp on the progress item to prevent double-awarding.
+    const awardExperienceIfNeeded = (progress, awardAmount) => {
+        if (!progress) return;
+        const existing = progress[contentId] || {};
+        const alreadyAwarded = Number(existing.awardedExp || 0);
+        const toAward = Math.max(0, Number(awardAmount || 0) - alreadyAwarded);
+        if (toAward <= 0) return;
+
+        // Read current achievements, add EXP and increment completedCount if this was not previously completed
+        const achievements = getCookie('achievements') || { completedCount: 0, level: 1, totalExp: 0 };
+        const prevCompletedCount = Number(achievements.completedCount || 0);
+        const newTotalExp = Number(achievements.totalExp || 0) + toAward;
+        const newCompletedCount = existing.completed ? prevCompletedCount : prevCompletedCount + 1;
+        const newLevel = Math.floor(newCompletedCount / 3) + 1;
+
+        const newAchievements = {
+            completedCount: newCompletedCount,
+            level: newLevel,
+            totalExp: newTotalExp
+        };
+        setCookie('achievements', newAchievements);
+
+        // mark awardedExp on the progress item
+        progress[contentId] = { ...existing, awardedExp: (Number(existing.awardedExp || 0) + toAward) };
+        persistProgress(progress);
+    };
+
+    // Save progress; if complete==true then handle awarding EXP if not already awarded.
+    const saveProgress = (complete = false, newScore = null) => {
+        const progress = getCookie('progress') || {};
+        const existing = progress[contentId] || {};
+
+        // determine score to persist (use passed newScore if provided)
+        let s = newScore !== null ? Number(newScore) : Number(score || 0);
+        if (Number.isNaN(s)) s = 0;
+        // clamp score
         if (s < 0) s = 0;
         if (s > maxScore) s = maxScore;
 
-        const progress = getCookie('progress') || {};
-        progress[contentId] = { completed: !!complete, score: s, timestamp: Date.now() };
-        setCookie('progress', progress);
+        // update progress entry
+        progress[contentId] = {
+            ...existing,
+            completed: !!complete || existing.completed || false,
+            score: s,
+            timestamp: Date.now(),
+            awardedExp: existing.awardedExp || 0 // keep existing awardedExp
+        };
 
-        // recompute achievements
-        const all = getCookie('progress') || {};
-        const completedCount = Object.values(all).filter(v => v && v.completed).length;
-        const summary = { completedCount, level: Math.floor(completedCount / 3) + 1 };
-        setCookie('achievements', summary);
+        // If marking as complete and not previously recorded as completed, award EXP
+        if (complete && !existing.completed) {
+            // Award EXP equal to the maxScore for this content (you can change this rule)
+            const awardAmount = maxScore;
+            awardExperienceIfNeeded(progress, awardAmount);
+            setCompleted(true);
+            setMessage('Marked complete');
+        } else {
+            // Persist partial progress only
+            persistProgress(progress);
+            setCompleted(progress[contentId].completed);
+            setMessage('Progress saved');
+        }
 
-        setCompleted(!!complete);
+        // update score in state as well
         setScore(s);
-        setMessage(complete ? 'Marked complete' : 'Progress saved');
+    };
 
-        // trigger confetti if completing
-        if (complete && !completed) {
-            triggerConfetti();
+    // Auto-save whenever the score changes; if the new score reaches maxScore mark complete
+    const onScoreChange = (value) => {
+        let v = Number(value);
+        if (Number.isNaN(v)) v = 0;
+        if (v < 0) v = 0;
+        if (v > maxScore) v = maxScore;
+        setScore(v);
+
+        // auto-save partial progress
+        saveProgress(false, v);
+
+        // if reaches max, auto-complete and award EXP
+        if (v >= maxScore) {
+            saveProgress(true, v);
         }
     };
 
-    const triggerConfetti = () => {
-        if (typeof window !== 'undefined' && window.document) {
-            const canvas = document.createElement('canvas');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            canvas.style.position = 'fixed';
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.pointerEvents = 'none';
-            canvas.style.zIndex = '9999';
-            document.body.appendChild(canvas);
-
-            const ctx = canvas.getContext('2d');
-            const particles = [];
-
-            for (let i = 0; i < 100; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: -10,
-                    vx: (Math.random() - 0.5) * 8,
-                    vy: Math.random() * 5 + 3,
-                    color: ['#dc143c', '#FFD700', '#4CAF50', '#2196F3'][Math.floor(Math.random() * 4)],
-                    size: Math.random() * 4 + 2,
-                });
-            }
-
-            const animate = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                let hasParticles = false;
-
-                particles.forEach(p => {
-                    if (p.y < canvas.height) {
-                        p.y += p.vy;
-                        p.x += p.vx;
-                        p.vy += 0.1; // gravity
-                        ctx.fillStyle = p.color;
-                        ctx.fillRect(p.x, p.y, p.size, p.size);
-                        hasParticles = true;
-                    }
-                });
-
-                if (hasParticles) {
-                    requestAnimationFrame(animate);
-                } else {
-                    document.body.removeChild(canvas);
-                }
-            };
-
-            animate();
-        }
-    };
-
-    const markComplete = () => {
-        saveProgress(true);
-    };
-
-    const savePartial = () => {
-        saveProgress(false);
-    };
-
+    // Manual reset: remove progress for this content and update achievements accordingly
     const reset = () => {
         const progress = getCookie('progress') || {};
-        delete progress[contentId];
-        setCookie('progress', progress);
+        const existing = progress[contentId] || {};
 
-        const all = getCookie('progress') || {};
-        const completedCount = Object.values(all).filter(v => v && v.completed).length;
-        const summary = { completedCount, level: Math.floor(completedCount / 3) + 1 };
-        setCookie('achievements', summary);
+        // If this item was completed and had awardedExp, reduce achievements.totalExp and completedCount accordingly
+        if (existing.completed && existing.awardedExp) {
+            const achievements = getCookie('achievements') || { completedCount: 0, level: 1, totalExp: 0 };
+            const newTotalExp = Math.max(0, Number(achievements.totalExp || 0) - Number(existing.awardedExp || 0));
+            const newCompletedCount = Math.max(0, Number(achievements.completedCount || 0) - 1);
+            const newLevel = Math.floor(newCompletedCount / 3) + 1;
+            const newAchievements = { completedCount: newCompletedCount, level: newLevel, totalExp: newTotalExp };
+            setCookie('achievements', newAchievements);
+        }
+
+        delete progress[contentId];
+        persistProgress(progress);
 
         setCompleted(false);
         setScore(0);
@@ -129,11 +154,11 @@ export function VideoTemplate({ contentId = 'page1', title = 'Video One', maxSco
 
             <div style={{ marginTop: 12 }}>
                 <label>
-                    Score: <input type="number" value={score} onChange={e => setScore(e.target.value)} min={0} max={maxScore} />
+                    Score: <input type="number" value={score} onChange={e => onScoreChange(e.target.value)} min={0} max={maxScore} />
                     <span style={{ marginLeft: 8, color: '#666' }}>/ {maxScore}</span>
                 </label>
-                <button onClick={savePartial} style={{ marginLeft: 8 }}>Save Progress</button>
-                <button onClick={markComplete} style={{ marginLeft: 8 }}>Mark Complete</button>
+                <button onClick={() => saveProgress(false)} style={{ marginLeft: 8 }}>Save Progress</button>
+                <button onClick={() => saveProgress(true)} style={{ marginLeft: 8 }}>Mark Complete</button>
                 <button onClick={reset} style={{ marginLeft: 8 }}>Reset</button>
             </div>
 

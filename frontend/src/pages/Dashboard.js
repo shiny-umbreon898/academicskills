@@ -14,12 +14,32 @@ function Dashboard({ navigate }) {
     const [achievements, setAchievements] = useState({ completedCount: 0, level: 1, totalExp: 0 });
     const [progressItems, setProgressItems] = useState({});
 
-    // Load stored state from cookies on mount
-    useEffect(() => {
+    // Load stored state from cookies
+    const refreshState = () => {
         const a = getCookie('achievements') || { completedCount: 0, level: 1, totalExp: 0 };
         setAchievements(a);
         const p = getCookie('progress') || {};
         setProgressItems(p);
+    };
+
+    useEffect(() => {
+        refreshState();
+
+        // Listen for storage events (other tabs) and a custom in-page event for same-tab updates
+        const onStorage = (e) => {
+            if (e.key === 'progress_updated_at' || e.key === 'achievements') {
+                refreshState();
+            }
+        };
+        const onCustom = () => refreshState();
+
+        window.addEventListener('storage', onStorage);
+        window.addEventListener('progress_updated', onCustom);
+
+        return () => {
+            window.removeEventListener('storage', onStorage);
+            window.removeEventListener('progress_updated', onCustom);
+        };
     }, []);
 
     // Calculate overall progress as percent of total score
@@ -60,7 +80,7 @@ function Dashboard({ navigate }) {
 
         const getButtonLabel = () => {
             if (!item) return 'Start';
-            if (item.completed) return 'Completed ?';
+            if (item.completed) return 'Completed';
             return 'Continue';
         };
 
@@ -76,7 +96,7 @@ function Dashboard({ navigate }) {
 
                 {/* status line */}
                 <div className={`page-card-status ${isCompleted ? 'status-completed' : item ? 'status-in-progress' : 'status-not-started'}`}>
-                    {isCompleted && '? Completed'}
+                    {isCompleted && 'Completed'}
                     {item && !isCompleted && 'In Progress'}
                     {!item && 'Not Started'}
                 </div>
@@ -84,7 +104,7 @@ function Dashboard({ navigate }) {
                 {/* linear progress bar: red fill that turns grey when completed */}
                 <div className="page-progress-bar">
                     <div 
-                        className={`page-progress-fill ${isCompleted ? 'completed' : ''}`}
+                        className={`page-progress-fill ${isCompleted ? 'Completed' : ''}`}
                         style={{ width: `${percent}%` }}
                     />
                 </div>
@@ -143,7 +163,7 @@ function Dashboard({ navigate }) {
                                 key={id}
                                 className={`badge ${progressItems[id]?.completed ? 'completed' : 'incomplete'}`}
                             >
-                                {progressItems[id]?.completed ? '?' : ''}
+                                {progressItems[id]?.completed ? '' : ''}
                             </span>
                         ))}
                     </div>
@@ -182,7 +202,8 @@ function Dashboard({ navigate }) {
                             const pct = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
                             return (
                                 <li key={id}>
-                                    <strong>{id}:</strong> {item && item.completed ? `? Completed (${item.score})` : `${pct}% complete`}
+                                    <strong>{id}:</strong> {`${pct}% complete`}  
+                                    {/* <strong>{id}:</strong> {item && item.completed ? `Completedd (${item.score})` : `${pct}% complete`} */   /* old progress checker */}
                                 </li>
                             );
                         })}
