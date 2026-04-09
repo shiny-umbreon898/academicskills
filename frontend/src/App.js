@@ -14,6 +14,15 @@ import Page3 from "./pages/Page3";
 
 function App() {
     const [page, setPage] = useState('/');
+    // dark mode state: persisted in localStorage
+    const [darkMode, setDarkMode] = useState(() => {
+        try {
+            const saved = localStorage.getItem('darkMode');
+            return saved ? JSON.parse(saved) : false;
+        } catch {
+            return false;
+        }
+    });
 
     // ensure persistent user id cookie/localStorage exists — app no longer requires login
     useEffect(() => {
@@ -28,10 +37,33 @@ function App() {
         }
     }, []);
 
+    // persist darkMode preference to localStorage
+    useEffect(() => {
+        try {
+            localStorage.setItem('darkMode', JSON.stringify(darkMode));
+        } catch (e) {
+            // ignore storage errors
+        }
+    }, [darkMode]);
+
+    // Apply dark mode class to document root
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark-mode');
+        } else {
+            document.documentElement.classList.remove('dark-mode');
+        }
+    }, [darkMode]);
+
     // function to navigate between pages
     const navigate = (p) => {
         setPage(p);
         window.scrollTo(0,0);
+    };
+
+    // toggle dark mode
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode);
     };
 
     // render the correct page component based on the current page
@@ -52,6 +84,15 @@ function App() {
 
             <nav>
                 <button onClick={() => navigate('/')}>Dashboard</button>
+                {/* Dark mode toggle button */}
+                <button
+                    className="dark-mode-toggle"
+                    onClick={toggleDarkMode}
+                    title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                    aria-label="Toggle dark mode"
+                >
+                    {darkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
             </nav>
 
             <main>
