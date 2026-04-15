@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
 import H5P_CONFIG from './h5pConfig';
+import ScoreControls from '../components/ScoreControls';
 
 export default function Page({ contentId }) {
   const cfg = H5P_CONFIG[contentId] || {};
@@ -10,6 +11,8 @@ export default function Page({ contentId }) {
   const [completed, setCompleted] = useState(false);
   const [message, setMessage] = useState('');
   const [h5pReady, setH5pReady] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [showTranscript, setShowTranscript] = useState(false);
 
   useEffect(() => {
     const progress = getCookie('progress') || {};
@@ -29,6 +32,14 @@ export default function Page({ contentId }) {
         s.onload = () => setH5pReady(true);
         document.body.appendChild(s);
       }
+    }
+
+    // Load transcript if provided
+    if (cfg.transcript) {
+      fetch(cfg.transcript)
+        .then(res => res.text())
+        .then(txt => setTranscript(txt))
+        .catch(() => setTranscript(''));
     }
   }, [contentId]);
 
@@ -121,7 +132,7 @@ export default function Page({ contentId }) {
 
   return (
     <div>
-      <h1>{contentId}</h1>
+      <h1>{cfg.title || contentId}</h1>
 
       <div style={{ maxWidth: 900, background: '#fff', padding: 16, borderRadius: 8, marginBottom: 16 }}>
         {cfg.type === 'h5p' ? (
@@ -133,27 +144,28 @@ export default function Page({ contentId }) {
             <div style={{ padding: 20, textAlign: 'center', color: '#999' }}>Loading H5P content...</div>
           )
         ) : (
-          <video width="100%" controls style={{ borderRadius: 8, backgroundColor: '#000' }}>
-            <source src={cfg.url} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+          <div>
+            <video width="100%" controls style={{ borderRadius: 8, backgroundColor: '#000' }}>
+              <source src={cfg.url} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            {transcript && (
+              <div style={{ marginTop: 12 }}>
+                <button onClick={() => setShowTranscript(!showTranscript)} style={{ marginBottom: 8 }}>
+                  {showTranscript ? 'Hide transcript' : 'Show transcript'}
+                </button>
+                {showTranscript && (
+                  <pre style={{ whiteSpace: 'pre-wrap', maxHeight: 320, overflow: 'auto', background: '#f7f7f7', padding: 12, borderRadius: 6 }}>
+                    {transcript}
+                  </pre>
+                )}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
-      <div style={{ marginTop: 12 }}>
-        <label>
-          Score: <input type="number" value={score} onChange={e => onScoreChange(e.target.value)} min={0} max={maxScore} />
-          <span style={{ marginLeft: 8, color: '#666' }}>/ {maxScore}</span>
-        </label>
-        <button onClick={() => saveProgress(false)} style={{ marginLeft: 8 }}>Save Progress</button>
-        <button onClick={() => saveProgress(true)} style={{ marginLeft: 8 }}>Mark Complete</button>
-        <button onClick={reset} style={{ marginLeft: 8 }}>Reset</button>
-      </div>
-
-      <div style={{ marginTop: 12 }}>
-        <strong>Status:</strong> {completed ? 'Completed' : 'Not completed'}
-        {message && <div style={{ color: '#4CAF50', fontWeight: 600, marginTop: 8 }}>{message}</div>}
-      </div>
+      <ScoreControls score={score} setScore={setScore} maxScore={maxScore} onSave={saveProgress} onReset={reset} completed={completed} message={message} />
     </div>
   );
 }

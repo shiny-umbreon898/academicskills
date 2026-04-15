@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
 import { getCookie } from '../utils/cookies';
+import H5P_CONFIG from './h5pConfig';
 
 // Max scores per content item
 const MAX_SCORES = { page1: 10, page2: 5, page3: 5 };
@@ -9,35 +10,10 @@ const MAX_SCORES = { page1: 10, page2: 5, page3: 5 };
 const TOTAL_MAX_SCORE = Object.values(MAX_SCORES).reduce((a, b) => a + b, 0);
 const EXP_PER_LEVEL = 5; // base experience required per level (scaled by level)
 
-// Content configuration including thumbnails
-// Set thumbnail paths to display images on dashboard cards
-const CONTENT_CONFIG = {
-    page1: {
-        title: 'Page One',
-        thumbnail: '/thumbnails/page1.png' // Update with actual thumbnail path or null for blank placeholder
-    },
-    page2: {
-        title: 'Page Two',
-        thumbnail: '/thumbnails/page2.png'
-    },
-    page3: {
-        title: 'Page Three',
-        thumbnail: '/thumbnails/page3.png'
-    }
-};
-
 function Dashboard({ navigate }) {
     // achievements holds completedCount, level and totalExp (total experience earned)
     const [achievements, setAchievements] = useState({ completedCount: 0, level: 1, totalExp: 0 });
     const [progressItems, setProgressItems] = useState({});
-
-    // Add dashboard background class to body while mounted
-    useEffect(() => {
-        document.body.classList.add('dashboard-bg');
-        return () => {
-            document.body.classList.remove('dashboard-bg');
-        };
-    }, []);
 
     // Load stored state from cookies
     const refreshState = () => {
@@ -97,17 +73,18 @@ function Dashboard({ navigate }) {
     const strokeDashoffset = circumference - (overallProgress / 100) * circumference;
 
     // Render a single page card with thumbnail, status, linear progress, score, and action button
-    const renderPageCard = (contentId, title) => {
+    const renderPageCard = (contentId) => {
+        const config = H5P_CONFIG[contentId] || {};
+        const title = config.title || contentId;
+        const thumbnail = config.thumbnail || null;
         const item = progressItems[contentId];
         const isCompleted = item && item.completed;
         const max = MAX_SCORES[contentId] || 10;
         const percent = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
-        const config = CONTENT_CONFIG[contentId];
-        const thumbnail = config?.thumbnail;
 
         const getButtonLabel = () => {
             if (!item) return 'Start';
-            if (item.completed) return 'Completed ?';
+            if (item.completed) return 'Completed';
             return 'Continue';
         };
 
@@ -134,7 +111,7 @@ function Dashboard({ navigate }) {
 
                 {/* status line */}
                 <div className={`page-card-status ${isCompleted ? 'status-completed' : item ? 'status-in-progress' : 'status-not-started'}`}>
-                    {isCompleted && '? Completed'}
+                    {isCompleted && 'Completed'}
                     {item && !isCompleted && 'In Progress'}
                     {!item && 'Not Started'}
                 </div>
@@ -201,7 +178,7 @@ function Dashboard({ navigate }) {
                                 key={id}
                                 className={`badge ${progressItems[id]?.completed ? 'completed' : 'incomplete'}`}
                             >
-                                {progressItems[id]?.completed ? '?' : ''}
+                                {progressItems[id]?.completed ? '' : ''}
                             </span>
                         ))}
                     </div>
@@ -240,7 +217,7 @@ function Dashboard({ navigate }) {
                             const pct = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
                             return (
                                 <li key={id}>
-                                    <strong>{id}:</strong> {item && item.completed ? `? Completed (${item.score})` : `${pct}% complete`}
+                                    <strong>{id}:</strong> {item && item.completed ? `Completed (${item.score})` : `${pct}% complete`}
                                 </li>
                             );
                         })}
@@ -250,9 +227,9 @@ function Dashboard({ navigate }) {
 
             {/* Page cards below the progress elements */}
             <div className="page-cards-container">
-                {renderPageCard('page1', 'Page One')}
-                {renderPageCard('page2', 'Page Two')}
-                {renderPageCard('page3', 'Page Three')}
+                {renderPageCard('page1')}
+                {renderPageCard('page2')}
+                {renderPageCard('page3')}
             </div>
         </div>
     );

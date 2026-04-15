@@ -1,116 +1,111 @@
 import React, { useState, useEffect } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
-import Page from './Page';
+import H5P_CONFIG from './h5pConfig';
+import ScoreControls from '../components/ScoreControls';
 
 // 6 Essential Grammar Tips with quiz questions for each segment
 const GRAMMAR_TIPS = [
     {
         id: 'tip1',
-        title: 'Subject-Verb Agreement',
-        description: 'The subject and verb must agree in number (singular or plural)',
-        example: 'Correct: "The team is playing well." / Incorrect: "The team are playing well."',
+        title: 'Long Sentences',
         quiz: {
-            question: 'Which sentence is grammatically correct?',
+            question: 'Why should very long sentences be avoided in academic writing?',
             options: [
-                'The cats is sleeping',
-                'The cats are sleeping',
-                'The cat are sleeping',
-                'Cats is sleeping'
+                'They always use the wrong tense',
+                'They can make the meaning hard to follow',
+                'They contain too many verbs',
+                'They are too formal'
             ],
             correctAnswer: 1
-        }
+        },
+        feedback: 'Long sentences can be difficult for readers to follow and may obscure the main point. Aim for clarity by breaking complex ideas into shorter sentences.'
     },
     {
         id: 'tip2',
-        title: 'Comma Usage',
-        description: 'Commas separate independent clauses, separate items in a list, and set off introductory phrases',
-        example: 'Correct: "I need milk, bread, and eggs." / Incorrect: "I need milk bread and eggs"',
+        title: 'Paragraphs',
         quiz: {
-            question: 'Where should the comma be placed?',
+            question: 'What is the main purpose of a paragraph in academic writing?',
             options: [
-                'When you wake up take a shower',
-                'When you wake, up take a shower',
-                'When you wake up, take a shower',
-                'When, you wake up take a shower'
+                'To include as many ideas as possible',
+                'To reduce the word count',
+                'To focus and develop one topic',
+                'To separate refrences'
             ],
             correctAnswer: 2
-        }
+        },
+        feedback: 'A paragraph should focus on developing one main idea or topic. Avoid including multiple unrelated ideas in the same paragraph.'
     },
     {
         id: 'tip3',
-        title: 'Pronoun Reference',
-        description: 'A pronoun must clearly refer to a single antecedent',
-        example: 'Correct: "Mary told Sue that she was late." / Unclear: "Mary and Sue talked, then she left."',
+        title: 'Subject-Verb Placement',
         quiz: {
-            question: 'Which sentence has a clear pronoun reference?',
+            question: 'Why should the subject and verb be placed close together?',
             options: [
-                'John told Mike he was wrong',
-                'When John arrived, Mike said he was ready',
-                'John and Mike left early because they had an appointment',
-                'The car and the truck passed by, and it was fast'
+                'To make the sentence shorter',
+                'To improve punctuation', 
+                'To enhance clarity and readability', 
+                'To make it sound more formal'
             ],
             correctAnswer: 2
-        }
+        },
+        feedback: 'Keeping the subject and verb close together helps improve clarity and readability. When they are separated by long phrases or clauses, it can make the sentence harder to understand.'
     },
     {
         id: 'tip4',
-        title: 'Verb Tense Consistency',
-        description: 'Maintain the same verb tense throughout a passage unless there is a logical reason to change',
-        example: 'Correct: "She walked home and made dinner." / Incorrect: "She walks home and made dinner."',
+        title: 'Prepositions',
         quiz: {
-            question: 'Which sentence maintains consistent verb tense?',
+            question: 'Which sentence is more suitable for academic writing?',
             options: [
-                'She was studying hard and passes her exam',
-                'She studied hard and passes her exam',
-                'She studied hard and passed her exam',
-                'She is studying hard and passed her exam'
+                
             ],
-            correctAnswer: 2
-        }
+            correctAnswer: null
+
+        },
+        feedback: 'Avoid /eaving prepositions hanging at the end of sentences in formal writing.'
     },
     {
         id: 'tip5',
-        title: 'Parallel Structure',
-        description: 'Elements in a list should be in the same grammatical form',
-        example: 'Correct: "I like reading, writing, and painting." / Incorrect: "I like reading, to write, and painting."',
+        title: 'Conjunctions',
         quiz: {
-            question: 'Which sentence uses parallel structure correctly?',
+            question: 'Why are conjunctions useful in academic writing?',
             options: [
-                'She enjoys singing, dancing, and to act',
-                'She enjoys to sing, to dance, and acting',
-                'She enjoys singing, dancing, and acting',
-                'She enjoys to sing, dancing, and to act'
+                'They replace punctuation',
+                'They connect ideas and improve flow',
+                'They shorten every sentence',
+                'They remove verbs'
             ],
-            correctAnswer: 2
-        }
+            correctAnswer: 1
+        },
+        feedback: 'Conjunctions like "however", "therefore", and "moreover" help connect ideas and improve the flow of your writing. Use them to show relationships between sentences and paragraphs.'
     },
     {
         id: 'tip6',
-        title: 'Commonly Confused Words',
-        description: 'Learn to distinguish between similar words like their/there/they\'re, your/you\'re, and its/it\'s',
-        example: 'Correct: "Their car is over there." / Incorrect: "There car is over their."',
+        title: 'Verb Tenses',
         quiz: {
-            question: 'Which sentence uses the correct word?',
+            question: 'Which tense is most commonly used in academic writing?',
             options: [
-                'Your going to love there new house',
-                'You\'re going to love their new house',
-                'Your going to love their new house',
-                'You\'re going to love there new house'
+                'Present continous',
+                'Past tense',
+                'Future tense',
+                'Present tense'
             ],
-            correctAnswer: 1
+            correctAnswer: 3
         }
     }
 ];
 
 // Page 2 Component: Interactive Grammar Tips with Video and Quizzes
 export default function Page2() {
+    const cfg = H5P_CONFIG['page2'] || {};
     const [score, setScore] = useState(0);
     const [completed, setCompleted] = useState(false);
     const [message, setMessage] = useState('');
     const [quizAnswers, setQuizAnswers] = useState({});
     const [showFeedback, setShowFeedback] = useState({});
+    const [transcript, setTranscript] = useState('');
+    const [showTranscript, setShowTranscript] = useState(false);
 
-    const maxScore = 5; // Max score for Page 2
+    const maxScore = cfg.maxScore || 5; // Max score for Page 2
 
     // Load existing progress on mount
     useEffect(() => {
@@ -129,6 +124,14 @@ export default function Page2() {
                 });
                 setShowFeedback(feedback);
             }
+        }
+
+        // load transcript if available in config
+        if (cfg.transcript) {
+            fetch(cfg.transcript)
+                .then(res => res.text())
+                .then(txt => setTranscript(txt))
+                .catch(() => setTranscript(''));
         }
     }, []);
 
@@ -191,7 +194,7 @@ export default function Page2() {
             const awardAmount = maxScore;
             awardExperienceIfNeeded(progress, awardAmount);
             setCompleted(true);
-            setMessage('? All grammar tips completed!');
+            setMessage('All grammar tips completed!');
         } else {
             persistProgress(progress);
             setCompleted(progress['page2'].completed);
@@ -260,7 +263,7 @@ export default function Page2() {
 
     return (
         <div>
-            <h1>6 Essential Grammar Tips</h1>
+            <h1>{cfg.title || '6 Essential Grammar Tips'}</h1>
 
             {/* Video Player */}
             <div style={{ maxWidth: 900, background: '#fff', padding: 16, borderRadius: 8, marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
@@ -270,10 +273,24 @@ export default function Page2() {
                     controls 
                     style={{ borderRadius: 4, backgroundColor: '#000' }}
                 >
-                    <source src="/resources/tutorials/six_grammar_tips.mp4" type="video/mp4" />
+                    <source src={cfg.url || '/resources/tutorials/six_grammar_tips.mp4'} type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
             </div>
+
+            {/* Transcript */}
+            {transcript && (
+                <div style={{ marginTop: 12 }}>
+                    <button onClick={() => setShowTranscript(!showTranscript)} style={{ marginBottom: 8 }}>
+                        {showTranscript ? 'Hide transcript' : 'Show transcript'}
+                    </button>
+                    {showTranscript && (
+                        <pre style={{ whiteSpace: 'pre-wrap', maxHeight: 320, overflow: 'auto', background: '#f7f7f7', padding: 12, borderRadius: 6 }}>
+                            {transcript}
+                        </pre>
+                    )}
+                </div>
+            )}
 
             {/* Grammar Tips Introduction */}
             <div style={{ maxWidth: 900, background: '#fff', padding: 16, borderRadius: 8, marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
@@ -308,7 +325,7 @@ export default function Page2() {
                                 <h3 style={{ color: '#333', fontSize: 16, margin: 0 }}>{tip.title}</h3>
                                 {isAnswered && (
                                     <span style={{ fontSize: 20, color: isCorrect ? '#4CAF50' : '#FF9800' }}>
-                                        {isCorrect ? '?' : '?'}
+                                        {isCorrect ? 'Correct' : 'Incorrect'}
                                     </span>
                                 )}
                             </div>
@@ -365,7 +382,7 @@ export default function Page2() {
                                     borderRadius: 4,
                                     fontSize: 12
                                 }}>
-                                    {isCorrect ? '? Correct!' : '? Incorrect. The correct answer is highlighted.'}
+                                    {isCorrect ? 'Correct!' : 'Incorrect. The correct answer is highlighted.'}
                                 </div>
                             )}
                         </div>
@@ -375,57 +392,13 @@ export default function Page2() {
 
             {/* Control Buttons */}
             <div style={{ marginTop: 24, padding: 16, background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                <button
-                    onClick={() => saveProgress(false)}
-                    style={{
-                        background: '#dc143c',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '10px 16px',
-                        borderRadius: 4,
-                        cursor: 'pointer',
-                        marginRight: 8,
-                        fontWeight: 600
-                    }}
-                >
-                    Save Progress
-                </button>
-                <button
-                    onClick={() => saveProgress(true)}
-                    disabled={Object.keys(quizAnswers).length < GRAMMAR_TIPS.length}
-                    style={{
-                        background: Object.keys(quizAnswers).length === GRAMMAR_TIPS.length ? '#4CAF50' : '#ccc',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '10px 16px',
-                        borderRadius: 4,
-                        cursor: Object.keys(quizAnswers).length === GRAMMAR_TIPS.length ? 'pointer' : 'not-allowed',
-                        marginRight: 8,
-                        fontWeight: 600
-                    }}
-                >
-                    Mark Complete
-                </button>
-                <button
-                    onClick={reset}
-                    style={{
-                        background: '#999',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '10px 16px',
-                        borderRadius: 4,
-                        cursor: 'pointer',
-                        fontWeight: 600
-                    }}
-                >
-                    Reset
-                </button>
+                <ScoreControls score={score} setScore={setScore} maxScore={maxScore} onSave={saveProgress} onReset={reset} completed={completed} message={message} />
             </div>
 
             {/* Status */}
             <div style={{ marginTop: 16, padding: 12, background: '#f9f9f9', borderRadius: 4, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                <strong>Status:</strong> {completed ? '? Completed' : 'In Progress'}
-                {message && <div style={{ color: message.includes('?') ? '#4CAF50' : '#333', fontWeight: 600, marginTop: 8 }}>{message}</div>}
+                <strong>Status:</strong> {completed ? 'Completed' : 'In Progress'}
+                {message && <div style={{ color: message.toLowerCase().includes('completed') ? '#4CAF50' : '#333', fontWeight: 600, marginTop: 8 }}>{message}</div>}
             </div>
         </div>
     );
