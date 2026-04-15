@@ -31,6 +31,14 @@ function Dashboard({ navigate }) {
     const [achievements, setAchievements] = useState({ completedCount: 0, level: 1, totalExp: 0 });
     const [progressItems, setProgressItems] = useState({});
 
+    // Add dashboard background class to body while mounted
+    useEffect(() => {
+        document.body.classList.add('dashboard-bg');
+        return () => {
+            document.body.classList.remove('dashboard-bg');
+        };
+    }, []);
+
     // Load stored state from cookies
     const refreshState = () => {
         const a = getCookie('achievements') || { completedCount: 0, level: 1, totalExp: 0 };
@@ -99,7 +107,7 @@ function Dashboard({ navigate }) {
 
         const getButtonLabel = () => {
             if (!item) return 'Start';
-            if (item.completed) return 'Completed';
+            if (item.completed) return 'Completed ?';
             return 'Continue';
         };
 
@@ -126,7 +134,7 @@ function Dashboard({ navigate }) {
 
                 {/* status line */}
                 <div className={`page-card-status ${isCompleted ? 'status-completed' : item ? 'status-in-progress' : 'status-not-started'}`}>
-                    {isCompleted && 'Completed'}
+                    {isCompleted && '? Completed'}
                     {item && !isCompleted && 'In Progress'}
                     {!item && 'Not Started'}
                 </div>
@@ -193,7 +201,7 @@ function Dashboard({ navigate }) {
                                 key={id}
                                 className={`badge ${progressItems[id]?.completed ? 'completed' : 'incomplete'}`}
                             >
-                                {progressItems[id]?.completed ? '' : ''}
+                                {progressItems[id]?.completed ? '?' : ''}
                             </span>
                         ))}
                     </div>
@@ -232,8 +240,7 @@ function Dashboard({ navigate }) {
                             const pct = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
                             return (
                                 <li key={id}>
-                                    <strong>{id}:</strong> {`${pct}% complete`}  
-                                    {/* <strong>{id}:</strong> {item && item.completed ? `Completedd (${item.score})` : `${pct}% complete`} */   /* old progress checker */}
+                                    <strong>{id}:</strong> {item && item.completed ? `? Completed (${item.score})` : `${pct}% complete`}
                                 </li>
                             );
                         })}
