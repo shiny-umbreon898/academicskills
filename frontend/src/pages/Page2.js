@@ -8,6 +8,7 @@ const GRAMMAR_TIPS = [
     {
         id: 'tip1',
         title: 'Long Sentences',
+        time: 45,
         quiz: {
             question: 'Why should very long sentences be avoided in academic writing?',
             options: [
@@ -23,6 +24,7 @@ const GRAMMAR_TIPS = [
     {
         id: 'tip2',
         title: 'Paragraphs',
+        time: 105,
         quiz: {
             question: 'What is the main purpose of a paragraph in academic writing?',
             options: [
@@ -38,6 +40,7 @@ const GRAMMAR_TIPS = [
     {
         id: 'tip3',
         title: 'Subject-Verb Placement',
+        time: 165,
         quiz: {
             question: 'Why should the subject and verb be placed close together?',
             options: [
@@ -53,6 +56,7 @@ const GRAMMAR_TIPS = [
     {
         id: 'tip4',
         title: 'Prepositions',
+        time: 225,
         quiz: {
             question: 'Which sentence is more suitable for academic writing?',
             options: [
@@ -66,6 +70,7 @@ const GRAMMAR_TIPS = [
     {
         id: 'tip5',
         title: 'Conjunctions',
+        time: 285,
         quiz: {
             question: 'Why are conjunctions useful in academic writing?',
             options: [
@@ -81,6 +86,7 @@ const GRAMMAR_TIPS = [
     {
         id: 'tip6',
         title: 'Verb Tenses',
+        time: 345,
         quiz: {
             question: 'Which tense is most commonly used in academic writing?',
             options: [
