@@ -7,7 +7,7 @@ This README explains the Academic Skills app: what it does, how it is organised,
 - [Introduction](#introduction)
 - [Features](#features)
 - [Codebase Overview](#codebase-overview)
-- [Installion and Quickstart](#installation-and-quickstart)
+- [Installation and Quickstart](#installation-and-quickstart)
 - [Adding Content](#adding-content)
 - [Bug and Limitations](#bugs-and-limitations)
 - [Further Development](#further-development)
@@ -16,7 +16,7 @@ This README explains the Academic Skills app: what it does, how it is organised,
 
 ## Introduction
 
-- Presents short learning modules accessible from a Dashboard.
+- Presents short learning modules accessible from the Dashboard.
 - Page 2 is an interactive video lesson with six grammar questions that appear as overlays at specific timestamps.
 - Answers and progress are saved to browser cookies and localStorage so users can resume later without signing in.
 - Users earn points (XP) and badges. The Dashboard displays progress, badges, and level information.
