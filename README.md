@@ -1,8 +1,8 @@
-#Academic Skills - Interactive Learning Dashboard
+# Academic Skills - Interactive Learning Dashboard
 
 This README explains the Academic Skills app: what it does, how it is organised, and how to extend the quiz content so non-developers can update questions and answers.
 
-##Table of contents
+## Table of contents
 
 - What this app does
 - Codebase overview
@@ -14,7 +14,7 @@ This README explains the Academic Skills app: what it does, how it is organised,
 - Contact and license
 
 
-##What this app does
+## What this app does
 
 - Presents short learning modules accessible from a Dashboard.
 - Page 2 is an interactive video lesson that shows six grammar questions as overlays at specific timestamps.
@@ -22,7 +22,19 @@ This README explains the Academic Skills app: what it does, how it is organised,
 - Users earn points (XP) and badges. The Dashboard displays progress, badges, and level information.
 - A simple confetti animation plays on certain events: correct answer, full-score completion, and clicking a completed badge (curently bugged)
 
-##Codebase overview
+
+
+## Features
+
+
+## Bugs
+
+- Confetti Animation not loading
+- Scoring on interactive video: sometimes doesn't save completion of last question or updates score (can stay on 5/6)
+- Mobile UI needs fixed (dashboard progress cards don't change to single item layout)
+
+
+## Codebase overview
 
 Key files and purpose:
 
@@ -35,7 +47,7 @@ Key files and purpose:
 - src/utils/cookies.js - Small helper functions for reading and writing cookies.
 - public/resources/ - Static assets such as captions and optional question files. (backups in src/resources/ for easier editing)
 
-##How it works - short flow
+## How it works - short flow
 
 1. On first use the app generates a lightweight user id and stores it in a cookie.
 2. The Dashboard reads progress and achievements from cookies and renders the current state.
@@ -47,7 +59,7 @@ Client-side storage
 
 This project is designed to be easy to run locally: no backend, no sign in. If you need multi-user persistence, move progress saving into a backend API and database.
 
-##Installation and quickstart
+## Installation and quickstart
 
 1. Install Node.js (v14 or later) and npm.
 2. Open a terminal and move into the frontend folder.
@@ -68,13 +80,13 @@ This project is designed to be easy to run locally: no backend, no sign in. If y
 
    npm run build
 
-##Structure of the interactive quiz (Page 2)
+## Structure of the interactive quiz (Page 2)
 
 - The quiz questions live in src/pages/Page2.js in a GRAMMAR_TIPS array. Each entry contains id, title, time (seconds), a quiz object (question, options array, correct answer index) and optional feedback text.
 - Page2 listens to the video timeupdate event and shows a question overlay when the currentTime is close to a tip's time.
 - Answers are saved to the progress cookie and persisted immediately so the last question is not lost.
 
-##Allowing non-devs to update questions and answers
+## Allowing non-devs to update questions and answers
 
 Next steps for adding content is to refactor code to keep content separate from logic and allow loading questions from an external file. 
 This way, editors who are not developers can update quiz content without editing JavaScript by providing the questions in a simple JSON or CSV file placed in the public/resources folder. 
@@ -127,13 +139,28 @@ Operational options if editors cannot edit public/ directly
 - Add a small admin UI to the app that lets an editor edit the JSON and saves to localStorage. This is a lightweight option that does not require a backend.
 - Host the JSON on a simple storage service or CMS and fetch from that URL. If hosted on another origin add CORS headers.
 
-##Known limitations
+## Known limitations
 
 - H5P content served from other origins may require CORS or a proxy.
 - Captions (VTT) are available in resources but must be manually attached to the <video> element via <track> tags if needed.
 - Progress is stored in the browser; clearing cookies/localStorage will remove saved progress.
 
-##Contact and license
+
+## Further Development
+
+- Add external content options
+- Update UX 
+- Refactor code to be as modular as possible with each component separated into indv files
+- Add more content
+- Add backgrounds, and improve mobile design#
+- Add more accessibility options
+- Add icons and unique badges for each topic
+- Add search bar for content
+
+
+
+
+## Contact and license
 
 If you need help or clarification, contact previous repo owner @shiny-umbreon898  The code in this repository is licensed under the GNU General Public License v3
 
@@ -144,7 +171,7 @@ Version: 0.3.0
 
 
 
-Notes for updating README:
+## Notes for updating README:
 
 Identify bugs
 How code can be refactored to allow external question files (JSON or CSV) 
