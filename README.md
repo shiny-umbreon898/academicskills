@@ -4,7 +4,9 @@ This README explains the Academic Skills app: what it does, how it is organised,
 
 ## Table of contents
 
-- What this app does
+- [Link Text](#section-title)
+
+- [Introduction](#introduction)
 - Features
 - Codebase overview
 - How it works
@@ -16,7 +18,7 @@ This README explains the Academic Skills app: what it does, how it is organised,
 - Contact and license
 
 
-## What this app does
+## Introduction
 
 - Presents short learning modules accessible from a Dashboard.
 - Page 2 is an interactive video lesson with six grammar questions that appear as overlays at specific timestamps.
