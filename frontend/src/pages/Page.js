@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
 import H5P_CONFIG from './h5pConfig';
 import ScoreControls from '../components/ScoreControls';
+import Confetti from '../components/Confetti';
 
 export default function Page({ contentId }) {
   const cfg = H5P_CONFIG[contentId] || {};
@@ -93,6 +94,10 @@ export default function Page({ contentId }) {
       awardExperienceIfNeeded(progress, awardAmount);
       setCompleted(true);
       setMessage('Marked complete');
+      // Confetti when marking complete with full score
+      if (s === maxScore) {
+        window.dispatchEvent(new CustomEvent('fireConfetti', { detail: { count: 160 } }));
+      }
     } else {
       persistProgress(progress);
       setCompleted(progress[contentId].completed);
@@ -132,6 +137,7 @@ export default function Page({ contentId }) {
 
   return (
     <div>
+      <Confetti />
       <h1>{cfg.title || contentId}</h1>
 
       <div style={{ maxWidth: 900, background: '#fff', padding: 16, borderRadius: 8, marginBottom: 16 }}>

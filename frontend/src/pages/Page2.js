@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
 import H5P_CONFIG from './h5pConfig';
 import ScoreControls from '../components/ScoreControls';
+import Confetti from '../components/Confetti';
 
 // 6 Essential Grammar Tips with quiz questions at specific timestamps
 
@@ -248,9 +249,13 @@ export default function Page2() {
     };
 
     // Save progress and calculate score based on quiz answers
-    const saveProgress = (complete = false, newScore = null) => {
+    // answers param (optional) allows caller to provide the latest answers object
+    const saveProgress = (complete = false, newScore = null, answers = null) => {
         const progress = getCookie('progress') || {};
         const existing = progress['page2'] || {};
+
+        // Use provided answers or current state
+        const answersToPersist = answers || quizAnswers;
 
         let s = newScore !== null ? Number(newScore) : Number(score || 0);
         if (Number.isNaN(s)) s = 0;
@@ -262,7 +267,7 @@ export default function Page2() {
             completed: !!complete || existing.completed || false,
             score: s,
             timestamp: Date.now(),
-            quizAnswers: quizAnswers,
+            quizAnswers: answersToPersist,
             awardedExp: existing.awardedExp || 0
         };
 
@@ -271,6 +276,13 @@ export default function Page2() {
             awardExperienceIfNeeded(progress, awardAmount);
             setCompleted(true);
             setMessage('All grammar tips completed!');
+            // if full score when marking complete, fire confetti
+            if (s === maxScore) {
+                const rect = videoRef.current ? videoRef.current.getBoundingClientRect() : null;
+                const x = rect ? rect.left + rect.width / 2 : undefined;
+                const y = rect ? rect.top + rect.height / 3 : undefined;
+                window.dispatchEvent(new CustomEvent('fireConfetti', { detail: { x, y, count: 160 } }));
+            }
         } else {
             persistProgress(progress);
             setCompleted(progress['page2'].completed);
@@ -293,20 +305,33 @@ export default function Page2() {
         // Show feedback
         setShowFeedback({ ...showFeedback, [tipId]: true });
 
-        // Calculate and update score
+        // Calculate and update score (persist in all cases to avoid losing last answer)
+        const newScore = Math.min(maxScore, Object.keys(updatedAnswers).filter(key => {
+            const idx = GRAMMAR_TIPS.findIndex(t => t.id === key);
+            return updatedAnswers[key] === GRAMMAR_TIPS[idx].quiz.correctAnswer;
+        }).length);
+        setScore(newScore);
+        // persist interim progress using updatedAnswers to avoid race conditions
+        saveProgress(false, newScore, updatedAnswers);
+
+        // fire confetti only when answer is correct
         if (isCorrect) {
-            const newScore = Math.min(maxScore, Object.keys(updatedAnswers).filter(key => {
-                const idx = GRAMMAR_TIPS.findIndex(t => t.id === key);
-                return updatedAnswers[key] === GRAMMAR_TIPS[idx].quiz.correctAnswer;
-            }).length);
-            setScore(newScore);
-            saveProgress(false, newScore);
+            const rect = videoRef.current ? videoRef.current.getBoundingClientRect() : null;
+            const x = rect ? rect.left + rect.width / 2 : undefined;
+            const y = rect ? rect.top + rect.height / 3 : undefined;
+            window.dispatchEvent(new CustomEvent('fireConfetti', { detail: { x, y, count: 80 } }));
         }
 
         // Auto-complete if all tips answered
         if (Object.keys(updatedAnswers).length === GRAMMAR_TIPS.length) {
             setTimeout(() => {
-                saveProgress(true);
+                // Calculate final score from all answers
+                const finalScore = Math.min(maxScore, Object.keys(updatedAnswers).filter(key => {
+                    const idx = GRAMMAR_TIPS.findIndex(t => t.id === key);
+                    return updatedAnswers[key] === GRAMMAR_TIPS[idx].quiz.correctAnswer;
+                }).length);
+                // persist complete progress and answers
+                saveProgress(true, finalScore, updatedAnswers);
             }, 500);
         }
     };
@@ -316,6 +341,16 @@ export default function Page2() {
         if (videoRef.current) {
             videoRef.current.play();
             setIsPlaying(true);
+        }
+    };
+
+    // when video ends, if user has full score fire confetti
+    const handleVideoEnded = () => {
+        if (score === maxScore) {
+            const rect = videoRef.current ? videoRef.current.getBoundingClientRect() : null;
+            const x = rect ? rect.left + rect.width / 2 : undefined;
+            const y = rect ? rect.top + rect.height / 3 : undefined;
+            window.dispatchEvent(new CustomEvent('fireConfetti', { detail: { x, y, count: 200 } }));
         }
     };
 
@@ -347,6 +382,7 @@ export default function Page2() {
 
     return (
         <div>
+            <Confetti />
             <h1>{cfg.title || '6 Essential Grammar Tips'}</h1>
 
             {/* Video Player Container */}
@@ -361,6 +397,7 @@ export default function Page2() {
                     onPlay={handlePlay}
                     onPause={handlePause}
                     onLoadedMetadata={handleLoadedMetadata}
+                    onEnded={handleVideoEnded}
                 >
                     <source src={cfg.url || '/resources/tutorials/six_grammar_tips.mp4'} type="video/mp4" />
                     Your browser does not support the video tag.

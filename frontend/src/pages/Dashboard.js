@@ -3,9 +3,10 @@ import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
 import { getCookie } from '../utils/cookies';
 import H5P_CONFIG from './h5pConfig';
+import Confetti from '../components/Confetti';
 
 // Max scores per content item
-const MAX_SCORES = { page1: 10, page2: 5, page3: 5 };
+const MAX_SCORES = { page1: 10, page2: 6, page3: 5 };
 // Compute total possible score from MAX_SCORES to keep values consistent
 const TOTAL_MAX_SCORE = Object.values(MAX_SCORES).reduce((a, b) => a + b, 0);
 const EXP_PER_LEVEL = 5; // base experience required per level (scaled by level)
@@ -130,6 +131,12 @@ function Dashboard({ navigate }) {
                     className={`page-card-button ${getButtonClass()}`}
                     onClick={(e) => {
                         e.stopPropagation();
+                        if (progressItems[contentId] && progressItems[contentId].completed) {
+                            // fire confetti at center when clicking a completed badge
+                            setTimeout(() => {
+                                window.dispatchEvent(new CustomEvent('fireConfetti', { detail: { count: 120 } }));
+                            }, 0);
+                        }
                         navigate(`/${contentId}`);
                     }}
                 >
@@ -141,6 +148,7 @@ function Dashboard({ navigate }) {
 
     return (
         <div>
+            <Confetti />
             <h1>Dashboard</h1>
 
             {/* Progress elements organized into 4 subdivs: level, badges, overall, pages */}
@@ -217,7 +225,7 @@ function Dashboard({ navigate }) {
                             const pct = item ? Math.round((Number(item.score || 0) / max) * 100) : 0;
                             return (
                                 <li key={id}>
-                                    <strong>{id}:</strong> {item && item.completed ? `Completed (${item.score})` : `${pct}% complete`}
+                                    <strong>{id}:</strong> {`${pct}% complete`}
                                 </li>
                             );
                         })}
