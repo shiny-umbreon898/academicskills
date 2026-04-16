@@ -5,33 +5,81 @@ This README explains the Academic Skills app: what it does, how it is organised,
 ## Table of contents
 
 - What this app does
+- Features
 - Codebase overview
 - How it works
 - Installation and quickstart
 - Structure of the interactive quiz (Page 2)
 - Letting non-coders update questions (JSON and CSV options)
-- Known limitations
+- Known bugs and limitations
+- Further development
 - Contact and license
 
 
 ## What this app does
 
 - Presents short learning modules accessible from a Dashboard.
-- Page 2 is an interactive video lesson that shows six grammar questions as overlays at specific timestamps.
-- Answers and progress are saved to browser cookies and to localStorage so users can resume later without signing in.
+- Page 2 is an interactive video lesson with six grammar questions that appear as overlays at specific timestamps.
+- Answers and progress are saved to browser cookies and localStorage so users can resume later without signing in.
 - Users earn points (XP) and badges. The Dashboard displays progress, badges, and level information.
-- A simple confetti animation plays on certain events: correct answer, full-score completion, and clicking a completed badge (curently bugged)
-
+- Includes celebratory confetti animations on key events (implemented but bugged)
 
 
 ## Features
 
+### Interactive Video with Embedded Quizzes
 
-## Bugs
+- Six grammar questions trigger at specific video timestamps (3:27, 4:42, 6:22, 8:03, 9:02, 11:18).
+- Video automatically pauses when a question appears, showing a centered overlay modal.
+- Custom timeline progress bar with visual markers showing question locations.
+- Timeline markers change color (white to green) when questions are answered.
+- Click timeline to seek to any position in the video.
+- Continue button resumes video after answering.
 
-- Confetti Animation not loading
-- Scoring on interactive video: sometimes doesn't save completion of last question or updates score (can stay on 5/6)
-- Mobile UI needs fixed (dashboard progress cards don't change to single item layout)
+### Quiz and Scoring
+
+- Multiple-choice questions with four options each.
+- Immediate feedback and detailed explanations for each question.
+- Score displays as number of correct answers (e.g., 4/6).
+- Final score is marked as "complete" when all questions are answered.
+- Progress is saved after every answer (prevents data loss on last question).
+
+### Progress Tracking and Persistence
+
+- Unique user ID auto-generated on first visit (no login required).
+- All progress stored in browser cookies and localStorage.
+- Cross-tab synchronization: progress updates visible in all open tabs.
+- Users can resume lessons exactly where they left off.
+
+### Gamification and Rewards
+
+- XP (experience points) awarded for completing modules.
+- Level system with progress bar showing advancement to next level.
+- Achievement badges for each completed module (1/3, 2/3, 3/3).
+- Confetti animations trigger on:
+  - Selecting a correct answer during quiz.
+  - Completing a video module with full score.
+  - Clicking a completed badge on Dashboard.
+
+### Dashboard Analytics
+
+- Level display with current level and XP bar.
+- Circular progress indicator showing overall completion (0-100%).
+- Individual module cards showing:
+  - Thumbnail image placeholder.
+  - Current status (Not Started, In Progress, Completed).
+  - Linear progress bar.
+  - Current score and percentage.
+  - Start / Continue / Completed button.
+- Badge collection display (visual badges for each module).
+- Per-module progress breakdown.
+
+### Dark Mode Support
+
+- Toggle dark mode from navigation bar.
+- Preference persists across sessions using localStorage.
+- CSS class-based styling (dark-mode) applied to document root.
+
 
 
 ## Codebase overview
@@ -42,10 +90,11 @@ Key files and purpose:
 - src/pages/Dashboard.js - Dashboard: page cards, badges, overall progress, level display.
 - src/pages/Page2.js - Interactive video lesson and overlay quizzes (timestamps, timeline markers, progress saving).
 - src/pages/Page.js - Generic page template that supports H5P when configured.
-- src/components/Confetti.js - Canvas-based confetti animation that listens for a "fireConfetti" event (bugged, earlier confetti anim might be in code elsewhere)
+- src/components/Confetti.js - Canvas-based confetti animation that listens for a fireConfetti event.
 - src/components/ScoreControls.js - Save, mark-complete and reset controls.
 - src/utils/cookies.js - Small helper functions for reading and writing cookies.
-- public/resources/ - Static assets such as captions and optional question files. (backups in src/resources/ for easier editing)
+- public/resources/ - Static assets such as captions and optional question files.
+- src/resources/ - Backups for easier editing during development.
 
 ## How it works - short flow
 
@@ -55,7 +104,7 @@ Key files and purpose:
 4. When the user selects an answer the app saves that answer immediately, updates the score, and shows feedback.
 5. When all questions for a module are answered the module is marked complete, XP is awarded, and the Dashboard updates.
 
-Client-side storage
+### Client-side storage
 
 This project is designed to be easy to run locally: no backend, no sign in. If you need multi-user persistence, move progress saving into a backend API and database.
 
@@ -64,21 +113,21 @@ This project is designed to be easy to run locally: no backend, no sign in. If y
 1. Install Node.js (v14 or later) and npm.
 2. Open a terminal and move into the frontend folder.
 
-   cd frontend
+   ```cd frontend```
 
 3. Install dependencies:
 
-   npm install
+   ```npm install```
 
 4. Start the development server:
 
-   npm start
+   ```npm start```
 
    The app will be available at http://localhost:3000
 
 5. Create a production build:
 
-   npm run build
+   ```npm run build```
 
 ## Structure of the interactive quiz (Page 2)
 
@@ -92,10 +141,11 @@ Next steps for adding content is to refactor code to keep content separate from 
 This way, editors who are not developers can update quiz content without editing JavaScript by providing the questions in a simple JSON or CSV file placed in the public/resources folder. 
 Both approaches could be supported; JSON is recommended for minimal code changes but option B will be more user friendly for editors.
 
-Option A - JSON (recommended for devs)
+### Option A - JSON (recommended for devs)
 
 1. Create a file public/resources/questions_page2.json with this structure:
 
+```
 {
   "tips": [
     {
@@ -112,14 +162,14 @@ Option A - JSON (recommended for devs)
       "correctIndex": 1,
       "feedback": "Long sentences can be difficult for readers to follow."
     }
-    // additional tip objects follow
   ]
 }
+```
 
 2. Modify src/pages/Page2.js to fetch that file at runtime and map it to the GRAMMAR_TIPS structure the component uses. The public folder is served statically, so the file will be available at /resources/questions_page2.json.
 3. Editors can update the JSON with a plain text editor or a JSON editor and then deploy the updated file to the public/resources path.
 
-Option B - CSV (spreadsheet friendly)
+### Option B - CSV (spreadsheet friendly)
 
 1. Create a CSV file public/resources/questions_page2.csv with columns:
    id,title,time,question,option1,option2,option3,option4,correctIndex,feedback
@@ -139,30 +189,42 @@ Operational options if editors cannot edit public/ directly
 - Add a small admin UI to the app that lets an editor edit the JSON and saves to localStorage. This is a lightweight option that does not require a backend.
 - Host the JSON on a simple storage service or CMS and fetch from that URL. If hosted on another origin add CORS headers.
 
-## Known limitations
+## Known bugs and limitations
 
+### Bugs (from earlier versions)
+
+- Last question answer not saving: Modified saveProgress() to accept answers parameter.
+- Page 2 score showing 5 instead of 6: Updated MAX_SCORES and auto-complete logic.
+- Dashboard badge confetti not displaying: Wrapped confetti dispatch in setTimeout.
+
+### Other Issues
+
+- Mobile UI: Dashboard progress cards do not stack to single column on small screens; needs responsive redesign.
 - H5P content served from other origins may require CORS or a proxy.
-- Captions (VTT) are available in resources but must be manually attached to the <video> element via <track> tags if needed.
+- Captions (VTT) are available in resources but must be manually attached to the video element via track tags if needed.
 - Progress is stored in the browser; clearing cookies/localStorage will remove saved progress.
 
+## Further development
 
-## Further Development
+Priority fixes and improvements:
 
-- Add external content options
-- Update UX 
-- Refactor code to be as modular as possible with each component separated into indv files
-- Add more content
-- Add backgrounds, and improve mobile design#
-- Add more accessibility options
-- Add icons and unique badges for each topic
-- Add search bar for content
-
-
-
+- Responsive mobile design for Dashboard (single column layout on small screens).
+- Externalize quiz content to JSON/CSV for easier content updates.
+- Refactor Page.js to serve as a true base template for reusable quiz modules.
+- Make scoring, progression, and interactive questions modular across pages.
+- Support different question types (multiple choice, true/false, short answer).
+- Add H5P standalone integration with xAPI event tracking for scoring as alternate architecture
+- Add icons and unique visual badges for each topic.
+- Add search and filtering for content.
+- Add more accessibility options (WCAG compliance).
+- Add background images and improve overall visual design (e.g. napier logo img in files to go in header)
+- Add more learning modules and content.
+- Add js animations.
 
 ## Contact and license
 
-If you need help or clarification, contact previous repo owner @shiny-umbreon898  The code in this repository is licensed under the GNU General Public License v3
+If you need help or clarification, contact previous repo owner @shiny-umbreon898 on github or email aaronghafoor@gmail.com 
+The code in this repository is licensed under the GNU General Public License v3.
 
 Last updated: April 2026
 Version: 0.3.0
@@ -179,6 +241,9 @@ Refactor to have all code logic for pages in base page.js
 Keep scoring, progression, interactive questions modular and reusable across pages
 before adding external question loading, code can be refactored to allow different types of questions
 Or can add in H5P standalone content for built in options (H5P is heavy, will require conversion using xAPI events to integrate with scoring and progression)
+
+
+
 
 
 
