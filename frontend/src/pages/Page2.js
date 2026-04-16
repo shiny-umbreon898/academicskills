@@ -1,14 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
 import H5P_CONFIG from './h5pConfig';
 import ScoreControls from '../components/ScoreControls';
 
-// 6 Essential Grammar Tips with quiz questions for each segment
+// 6 Essential Grammar Tips with quiz questions at specific timestamps
+
+// timestamps
+// 3:27 - 1: Long Sentences
+// 4:42 - 2: Paragraphs
+// 6:22 - 3: Subject-Verb Placement
+// 8:03 - 4: Prepositions
+// 9:02 - 5: Conjunctions
+// 11:18 - 6: Verb Tenses
+
 const GRAMMAR_TIPS = [
     {
         id: 'tip1',
         title: 'Long Sentences',
-        time: 45,
+        // 3:27 -> 207s
+        time: 207,
         quiz: {
             question: 'Why should very long sentences be avoided in academic writing?',
             options: [
@@ -24,14 +34,15 @@ const GRAMMAR_TIPS = [
     {
         id: 'tip2',
         title: 'Paragraphs',
-        time: 105,
+        // 4:42 -> 282s
+        time: 282,
         quiz: {
             question: 'What is the main purpose of a paragraph in academic writing?',
             options: [
                 'To include as many ideas as possible',
                 'To reduce the word count',
                 'To focus and develop one topic',
-                'To separate refrences'
+                'To separate references'
             ],
             correctAnswer: 2
         },
@@ -40,7 +51,8 @@ const GRAMMAR_TIPS = [
     {
         id: 'tip3',
         title: 'Subject-Verb Placement',
-        time: 165,
+        // 6:22 -> 382s
+        time: 382,
         quiz: {
             question: 'Why should the subject and verb be placed close together?',
             options: [
@@ -56,21 +68,25 @@ const GRAMMAR_TIPS = [
     {
         id: 'tip4',
         title: 'Prepositions',
-        time: 225,
+        // 8:03 -> 483s
+        time: 483,
         quiz: {
-            question: 'Which sentence is more suitable for academic writing?',
+            question: 'Which sentence follows the rule about prepositions in academic writing?',
             options: [
-                
+                'What topic did the lecture focus on?',
+                'On what topic did the lecture focus?',
+                'The lecture focused on what topic?',
+                'What topic the lecture focused on?'
             ],
-            correctAnswer: null
-
+            correctAnswer: 1
         },
-        feedback: 'Avoid /eaving prepositions hanging at the end of sentences in formal writing.'
+        feedback: 'In formal academic writing, avoid leaving prepositions hanging at the end of sentences. Place the preposition before its object.'
     },
     {
         id: 'tip5',
         title: 'Conjunctions',
-        time: 285,
+        // 9:02 -> 542s
+        time: 542,
         quiz: {
             question: 'Why are conjunctions useful in academic writing?',
             options: [
@@ -81,28 +97,33 @@ const GRAMMAR_TIPS = [
             ],
             correctAnswer: 1
         },
-        feedback: 'Conjunctions like "however", "therefore", and "moreover" help connect ideas and improve the flow of your writing. Use them to show relationships between sentences and paragraphs.'
+        feedback: 'Conjunctions like "however", "therefore", and "moreover" help connect ideas and improve flow.'
     },
     {
         id: 'tip6',
         title: 'Verb Tenses',
-        time: 345,
+        // 11:18 -> 678s
+        time: 678,
         quiz: {
             question: 'Which tense is most commonly used in academic writing?',
             options: [
-                'Present continous',
+                'Present continuous',
                 'Past tense',
                 'Future tense',
-                'Present tense'
+                'Simple present tense'
             ],
             correctAnswer: 3
-        }
+        },
+        feedback: 'Simple present tense is commonly used in academic writing for general statements and findings.'
     }
 ];
 
-// Page 2 Component: Interactive Grammar Tips with Video and Quizzes
+// Page 2 Component: Interactive Video with Question Overlays
 export default function Page2() {
     const cfg = H5P_CONFIG['page2'] || {};
+    const videoRef = useRef(null);
+    const timelineRef = useRef(null);
+    
     const [score, setScore] = useState(0);
     const [completed, setCompleted] = useState(false);
     const [message, setMessage] = useState('');
@@ -110,8 +131,12 @@ export default function Page2() {
     const [showFeedback, setShowFeedback] = useState({});
     const [transcript, setTranscript] = useState('');
     const [showTranscript, setShowTranscript] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [activeQuestion, setActiveQuestion] = useState(null);
 
-    const maxScore = cfg.maxScore || 5; // Max score for Page 2
+    const maxScore = cfg.maxScore || 6;
 
     // Load existing progress on mount
     useEffect(() => {
@@ -120,10 +145,8 @@ export default function Page2() {
         if (data) {
             setCompleted(!!data.completed);
             setScore(Number(data.score) || 0);
-            // Restore quiz answers if available
             if (data.quizAnswers) {
                 setQuizAnswers(data.quizAnswers);
-                // Re-populate feedback for answered questions
                 const feedback = {};
                 Object.keys(data.quizAnswers).forEach(tipId => {
                     feedback[tipId] = true;
@@ -140,6 +163,53 @@ export default function Page2() {
                 .catch(() => setTranscript(''));
         }
     }, []);
+
+    // Update duration when metadata loaded
+    const handleLoadedMetadata = () => {
+        if (videoRef.current) {
+            setDuration(videoRef.current.duration || 0);
+        }
+    };
+
+    // Check for question at current time
+    useEffect(() => {
+        const questionTip = GRAMMAR_TIPS.find(tip => 
+            Math.abs(tip.time - currentTime) < 0.6 && !showFeedback[tip.id]
+        );
+        
+        if (questionTip && isPlaying) {
+            setActiveQuestion(questionTip.id);
+            if (videoRef.current) {
+                videoRef.current.pause();
+                setIsPlaying(false);
+            }
+        }
+    }, [currentTime, isPlaying, showFeedback]);
+
+    const handleTimeUpdate = () => {
+        if (videoRef.current) {
+            setCurrentTime(videoRef.current.currentTime);
+        }
+    };
+
+    const handlePlay = () => {
+        setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+        setIsPlaying(false);
+    };
+
+    // Seek by clicking timeline
+    const handleTimelineClick = (e) => {
+        if (!timelineRef.current || !videoRef.current || !duration) return;
+        const rect = timelineRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const pct = Math.max(0, Math.min(1, x / rect.width));
+        const time = pct * duration;
+        videoRef.current.currentTime = time;
+        setCurrentTime(time);
+    };
 
     // Helper: persist progress object back to cookies
     const persistProgress = (progress) => {
@@ -212,8 +282,6 @@ export default function Page2() {
 
     // Handle quiz answer selection
     const handleAnswerClick = (tipId, selectedIndex) => {
-        if (showFeedback[tipId]) return; // Already answered
-
         const tipIndex = GRAMMAR_TIPS.findIndex(t => t.id === tipId);
         const tip = GRAMMAR_TIPS[tipIndex];
         const isCorrect = selectedIndex === tip.quiz.correctAnswer;
@@ -243,6 +311,14 @@ export default function Page2() {
         }
     };
 
+    const continueVideo = () => {
+        setActiveQuestion(null);
+        if (videoRef.current) {
+            videoRef.current.play();
+            setIsPlaying(true);
+        }
+    };
+
     // Reset progress
     const reset = () => {
         const progress = getCookie('progress') || {};
@@ -267,21 +343,162 @@ export default function Page2() {
         setShowFeedback({});
     };
 
+    const activeTip = GRAMMAR_TIPS.find(t => t.id === activeQuestion);
+
     return (
         <div>
             <h1>{cfg.title || '6 Essential Grammar Tips'}</h1>
 
-            {/* Video Player */}
-            <div style={{ maxWidth: 900, background: '#fff', padding: 16, borderRadius: 8, marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            {/* Video Player Container */}
+            <div style={{ maxWidth: 900, background: '#fff', padding: 16, borderRadius: 8, marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'relative' }}>
                 <video 
+                    ref={videoRef}
                     width="100%" 
                     height="auto" 
                     controls 
-                    style={{ borderRadius: 4, backgroundColor: '#000' }}
+                    style={{ borderRadius: 4, backgroundColor: '#000', display: activeQuestion ? 'none' : 'block' }}
+                    onTimeUpdate={handleTimeUpdate}
+                    onPlay={handlePlay}
+                    onPause={handlePause}
+                    onLoadedMetadata={handleLoadedMetadata}
                 >
                     <source src={cfg.url || '/resources/tutorials/six_grammar_tips.mp4'} type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
+
+                {/* Custom timeline with markers */}
+                <div ref={timelineRef} onClick={handleTimelineClick} style={{ marginTop: 12, height: 14, background: '#eee', borderRadius: 7, cursor: 'pointer', position: 'relative' }}>
+                    {/* progress fill */}
+                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: duration ? `${Math.max(0, Math.min(100, (currentTime / duration) * 100))}%` : '0%', background: '#2196F3', borderRadius: 7 }} />
+                    {/* markers */}
+                    {duration > 0 && GRAMMAR_TIPS.map(tip => {
+                        const pct = Math.max(0, Math.min(100, (tip.time / duration) * 100));
+                        const answered = !!showFeedback[tip.id];
+                        return (
+                            <div key={tip.id} title={`${tip.title} - ${Math.floor(tip.time/60)}:${String(tip.time%60).padStart(2,'0')}`} style={{ position: 'absolute', left: `calc(${pct}% - 6px)`, top: -6, width: 12, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ width: 6, height: 6, borderRadius: 3, background: answered ? '#4CAF50' : '#FFF', border: `2px solid ${answered ? '#4CAF50' : '#2196F3'}` }} />
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Question Overlay */}
+                {activeQuestion && activeTip && (
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0, 0, 0, 0.85)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 10,
+                        borderRadius: 4,
+                        padding: 16
+                    }}>
+                        <div style={{
+                            background: '#fff',
+                            borderRadius: 8,
+                            padding: 32,
+                            maxWidth: 600,
+                            boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+                        }}>
+                            <h2 style={{ color: '#333', marginBottom: 20, fontSize: 20 }}>
+                                {activeTip.title}
+                            </h2>
+                            
+                            <p style={{ color: '#555', marginBottom: 24, fontSize: 16, lineHeight: 1.5 }}>
+                                {activeTip.quiz.question}
+                            </p>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+                                {activeTip.quiz.options.map((option, optionIndex) => {
+                                    const isSelected = quizAnswers[activeTip.id] === optionIndex;
+                                    const isCorrect = optionIndex === activeTip.quiz.correctAnswer;
+                                    const answered = showFeedback[activeTip.id];
+
+                                    return (
+                                        <button
+                                            key={optionIndex}
+                                            onClick={() => handleAnswerClick(activeTip.id, optionIndex)}
+                                            disabled={answered}
+                                            style={{
+                                                padding: 14,
+                                                background: answered
+                                                    ? isCorrect
+                                                        ? '#4CAF50'
+                                                        : isSelected
+                                                        ? '#FF9800'
+                                                        : '#f0f0f0'
+                                                    : '#f0f0f0',
+                                                color: answered && (isCorrect || isSelected) ? '#fff' : '#333',
+                                                border: answered && isCorrect ? '2px solid #2e7d32' : '1px solid #ddd',
+                                                borderRadius: 6,
+                                                cursor: answered ? 'default' : 'pointer',
+                                                fontSize: 14,
+                                                fontWeight: 500,
+                                                transition: 'all 0.3s ease',
+                                                textAlign: 'left'
+                                            }}
+                                        >
+                                            {option}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {showFeedback[activeTip.id] && (
+                                <div>
+                                    <div style={{
+                                        padding: 12,
+                                        background: quizAnswers[activeTip.id] === activeTip.quiz.correctAnswer ? '#e8f5e9' : '#fff3e0',
+                                        color: quizAnswers[activeTip.id] === activeTip.quiz.correctAnswer ? '#2e7d32' : '#e65100',
+                                        borderRadius: 6,
+                                        marginBottom: 16,
+                                        fontSize: 14,
+                                        lineHeight: 1.5
+                                    }}>
+                                        {quizAnswers[activeTip.id] === activeTip.quiz.correctAnswer ? 'Correct!' : 'Incorrect. The correct answer is shown above.'}
+                                    </div>
+                                    
+                                    {activeTip.feedback && (
+                                        <div style={{
+                                            padding: 12,
+                                            background: '#f5f5f5',
+                                            borderLeft: '4px solid #2196F3',
+                                            borderRadius: 4,
+                                            marginBottom: 16,
+                                            fontSize: 13,
+                                            color: '#555',
+                                            lineHeight: 1.6
+                                        }}>
+                                            <strong>Explanation:</strong> {activeTip.feedback}
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={continueVideo}
+                                        style={{
+                                            padding: '12px 24px',
+                                            background: '#2196F3',
+                                            color: '#fff',
+                                            border: 'none',
+                                            borderRadius: 6,
+                                            cursor: 'pointer',
+                                            fontSize: 14,
+                                            fontWeight: 600,
+                                            width: '100%'
+                                        }}
+                                    >
+                                        Continue Video
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Transcript */}
@@ -298,102 +515,31 @@ export default function Page2() {
                 </div>
             )}
 
-            {/* Grammar Tips Introduction */}
-            <div style={{ maxWidth: 900, background: '#fff', padding: 16, borderRadius: 8, marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                <p style={{ fontSize: 16, marginBottom: 12, color: '#666' }}>
-                    Watch the video above, then answer the quiz questions for each grammar tip to test your understanding.
-                </p>
+            {/* Progress Overview */}
+            <div style={{ maxWidth: 900, background: '#fff', padding: 16, borderRadius: 8, marginBottom: 20, marginTop: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                 <div style={{ background: '#f0f0f0', padding: 12, borderRadius: 4, marginBottom: 12 }}>
-                    <strong>Progress:</strong> {Object.keys(quizAnswers).length} / {GRAMMAR_TIPS.length} tips completed
+                    <strong>Progress:</strong> {Object.keys(showFeedback).length} / {GRAMMAR_TIPS.length} questions answered
                 </div>
-            </div>
-
-            {/* Grammar Tips Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 24 }}>
-                {GRAMMAR_TIPS.map((tip) => {
-                    const isAnswered = !!quizAnswers[tip.id];
-                    const isCorrect = isAnswered && quizAnswers[tip.id] === tip.quiz.correctAnswer;
-
-                    return (
-                        <div
-                            key={tip.id}
-                            style={{
-                                background: '#fff',
-                                border: isCorrect ? '2px solid #4CAF50' : isAnswered ? '2px solid #FF9800' : '1px solid #ddd',
-                                borderRadius: 8,
-                                padding: 16,
-                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                transition: 'all 0.3s ease'
-                            }}
-                        >
-                            {/* Tip Header */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                                <h3 style={{ color: '#333', fontSize: 16, margin: 0 }}>{tip.title}</h3>
-                                {isAnswered && (
-                                    <span style={{ fontSize: 20, color: isCorrect ? '#4CAF50' : '#FF9800' }}>
-                                        {isCorrect ? 'Correct' : 'Incorrect'}
-                                    </span>
-                                )}
+                
+                {/* Question Markers */}
+                <div style={{ marginTop: 16 }}>
+                    <strong style={{ display: 'block', marginBottom: 8 }}>Questions in Video:</strong>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
+                        {GRAMMAR_TIPS.map(tip => (
+                            <div key={tip.id} style={{
+                                padding: 8,
+                                background: showFeedback[tip.id] ? '#4CAF50' : '#f0f0f0',
+                                color: showFeedback[tip.id] ? '#fff' : '#333',
+                                borderRadius: 4,
+                                fontSize: 12,
+                                textAlign: 'center',
+                                fontWeight: 500
+                            }}>
+                                {tip.title}
                             </div>
-
-                            {/* Tip Description */}
-                            <p style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>{tip.description}</p>
-
-                            {/* Example */}
-                            <div style={{ background: '#f9f9f9', padding: 8, borderRadius: 4, marginBottom: 12, fontSize: 12, color: '#555' }}>
-                                <strong>Example:</strong> {tip.example}
-                            </div>
-
-                            {/* Quiz Question */}
-                            <div style={{ marginBottom: 12 }}>
-                                <strong style={{ display: 'block', marginBottom: 8, color: '#333' }}>
-                                    {tip.quiz.question}
-                                </strong>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                    {tip.quiz.options.map((option, optionIndex) => (
-                                        <button
-                                            key={optionIndex}
-                                            onClick={() => handleAnswerClick(tip.id, optionIndex)}
-                                            disabled={isAnswered}
-                                            style={{
-                                                padding: 10,
-                                                background: isAnswered
-                                                    ? optionIndex === tip.quiz.correctAnswer
-                                                        ? '#4CAF50'
-                                                        : optionIndex === quizAnswers[tip.id]
-                                                        ? '#FF9800'
-                                                        : '#f0f0f0'
-                                                    : '#f0f0f0',
-                                                color: isAnswered && (optionIndex === tip.quiz.correctAnswer || optionIndex === quizAnswers[tip.id]) ? '#fff' : '#333',
-                                                border: '1px solid #ddd',
-                                                borderRadius: 4,
-                                                cursor: isAnswered ? 'default' : 'pointer',
-                                                fontSize: 12,
-                                                transition: 'all 0.3s ease',
-                                                opacity: isAnswered ? 1 : 0.8
-                                            }}
-                                        >
-                                            {option}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Feedback */}
-                            {showFeedback[tip.id] && (
-                                <div style={{
-                                    padding: 8,
-                                    background: isCorrect ? '#e8f5e9' : '#fff3e0',
-                                    color: isCorrect ? '#2e7d32' : '#e65100',
-                                    borderRadius: 4,
-                                    fontSize: 12
-                                }}>
-                                    {isCorrect ? 'Correct!' : 'Incorrect. The correct answer is highlighted.'}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {/* Control Buttons */}
