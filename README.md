@@ -4,18 +4,14 @@ This README explains the Academic Skills app: what it does, how it is organised,
 
 ## Table of contents
 
-- [Link Text](#section-title)
-
 - [Introduction](#introduction)
-- Features
-- Codebase overview
-- How it works
-- Installation and quickstart
-- Structure of the interactive quiz (Page 2)
-- Letting non-coders update questions (JSON and CSV options)
-- Known bugs and limitations
-- Further development
-- Contact and license
+- [Features](#features)
+- [Codebase Overview](#codebase-overview)
+- [Installion and Quickstart](#installation-and-quickstart)
+- [Adding Content](#adding-content)
+- [Bug and Limitations](#bugs-and-limitations)
+- [Further Development](#further-development)
+- [Contact and License](#contact-and-license)
 
 
 ## Introduction
@@ -86,7 +82,7 @@ This README explains the Academic Skills app: what it does, how it is organised,
 
 ## Codebase overview
 
-Key files and purpose:
+### Key files and purpose:
 
 - src/App.js - App shell and simple navigation.
 - src/pages/Dashboard.js - Dashboard: page cards, badges, overall progress, level display.
@@ -98,13 +94,19 @@ Key files and purpose:
 - public/resources/ - Static assets such as captions and optional question files.
 - src/resources/ - Backups for easier editing during development.
 
-## How it works - short flow
+### How it works - short flow
 
 1. On first use the app generates a lightweight user id and stores it in a cookie.
 2. The Dashboard reads progress and achievements from cookies and renders the current state.
 3. On Page 2 the HTML5 video plays. When playback reaches a question timestamp the app pauses the video and shows a modal quiz overlay.
 4. When the user selects an answer the app saves that answer immediately, updates the score, and shows feedback.
 5. When all questions for a module are answered the module is marked complete, XP is awarded, and the Dashboard updates.
+
+### Structure of the interactive quiz (Page 2)
+
+- The quiz questions live in src/pages/Page2.js in a GRAMMAR_TIPS array. Each entry contains id, title, time (seconds), a quiz object (question, options array, correct answer index) and optional feedback text.
+- Page2 listens to the video timeupdate event and shows a question overlay when the currentTime is close to a tip's time.
+- Answers are saved to the progress cookie and persisted immediately so the last question is not lost.
 
 ### Client-side storage
 
@@ -131,13 +133,13 @@ This project is designed to be easy to run locally: no backend, no sign in. If y
 
    ```npm run build```
 
-## Structure of the interactive quiz (Page 2)
 
-- The quiz questions live in src/pages/Page2.js in a GRAMMAR_TIPS array. Each entry contains id, title, time (seconds), a quiz object (question, options array, correct answer index) and optional feedback text.
-- Page2 listens to the video timeupdate event and shows a question overlay when the currentTime is close to a tip's time.
-- Answers are saved to the progress cookie and persisted immediately so the last question is not lost.
 
-## Allowing non-devs to update questions and answers
+## Adding Content
+
+Allowing non-devs to add and update questions and answers
+
+Videos and transcripts are linked in `h5pConfig.js`.
 
 Next steps for adding content is to refactor code to keep content separate from logic and allow loading questions from an external file. 
 This way, editors who are not developers can update quiz content without editing JavaScript by providing the questions in a simple JSON or CSV file placed in the public/resources folder. 
@@ -191,7 +193,7 @@ Operational options if editors cannot edit public/ directly
 - Add a small admin UI to the app that lets an editor edit the JSON and saves to localStorage. This is a lightweight option that does not require a backend.
 - Host the JSON on a simple storage service or CMS and fetch from that URL. If hosted on another origin add CORS headers.
 
-## Known bugs and limitations
+## Bugs and Limitations
 
 ### Bugs (from earlier versions)
 
@@ -223,7 +225,7 @@ Priority fixes and improvements:
 - Add more learning modules and content.
 - Add js animations.
 
-## Contact and license
+## Contact and License
 
 If you need help or clarification, contact previous repo owner @shiny-umbreon898 on github or email aaronghafoor@gmail.com 
 The code in this repository is licensed under the GNU General Public License v3.
