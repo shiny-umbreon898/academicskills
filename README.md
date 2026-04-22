@@ -5,13 +5,10 @@ This README explains the Academic Skills app: what it does, how it is organised,
 ## Table of contents
 
 - [Introduction](#introduction)
-- [Codebase Overview](#codebase-overview)
 - [Installation and Quickstart](#installation-and-quickstart)
-- [Adding Content](#adding-content)
-- [Bug and Limitations](#bugs-and-limitations)
+- [Issues](#issues)
 - [Further Development](#further-development)
 - [Contact and License](#contact-and-license)
-
 
 ## Introduction
 
@@ -21,8 +18,13 @@ This README explains the Academic Skills app: what it does, how it is organised,
 - Users earn points (XP) and badges. The Dashboard displays progress, badges, and level information.
 - Includes celebratory confetti animations on key events (implemented but bugged)
 
-See `FEATURES.md` for a detailed list of features and design decisions
+See [`FEATURES.md`](#./docs/Features.md) for a detailed list of features and design decisions
 
+See [`GETTING_STARTED.md`](#./docs/GETTING_STARTED.md) for a quick start guide by role (developer, content creator, etc.))
+
+See [`INDEX`](#./docs/INDEX.md) for a full index of documentation)
+
+See [`PROJECT_SUMMARY.md`](#./docs/PROJECT_SUMMARY.md) for a final summary of the project and next steps)]
 
 ### How the App Works
 
