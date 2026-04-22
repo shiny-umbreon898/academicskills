@@ -553,6 +553,77 @@ html.dark-mode .btn-completed:hover {
   background-color: #555;
 }
 
+/* Header styles */
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid #e6e6e6;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+  position: relative;
+  z-index: 50;
+}
+
+.site-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-logo {
+  height: 48px;
+  width: auto;
+}
+
+.site-title .university-name {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.site-title .site-sub {
+  font-size: 14px;
+  color: #666;
+}
+
+.site-nav button {
+  margin-left: 8px;
+}
+
+/* Ensure dashboard adds background on body.dashboard-bg */
+body.dashboard-bg {
+  /* placeholder: actual image path is /resources/library.png */
+}
+
+/* show library image sides on desktop only */
+@media (min-width: 993px) {
+  body.dashboard-bg::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url('./resources/library.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: auto 100vh;
+    opacity: 0.75;
+    pointer-events: none;
+    z-index: 0;
+    filter: saturate(0.6) brightness(0.8);
+  }
+
+  /* keep content above background */
+  .App, main, .site-header { z-index: 10; position: relative; }
+
+  /* center content in a constrained container */
+  .site-inner, main > div { max-width: 900px; margin: 0 auto; }
+}
+
 /* Tablet Layout (768px and up) */
 @media (min-width: 768px) {
   .progress-elements-wrapper {
