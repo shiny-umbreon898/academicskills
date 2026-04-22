@@ -12,19 +12,19 @@ This README explains the Academic Skills app: what it does, how it is organised,
 
 ## Introduction
 
-- Presents short learning modules accessible from the Dashboard.
-- Page 2 is an interactive video lesson with six grammar questions that appear as overlays at specific timestamps.
-- Answers and progress are saved to browser cookies and localStorage so users can resume later without signing in.
-- Users earn points (XP) and badges. The Dashboard displays progress, badges, and level information.
-- Includes celebratory confetti animations on key events (implemented but bugged)
+See [`GETTING_STARTED.md`](#./docs/GETTING_STARTED.md) for a quick start guide by role (developer, content creator, etc.))
 
 See [`FEATURES.md`](#./docs/Features.md) for a detailed list of features and design decisions
-
-See [`GETTING_STARTED.md`](#./docs/GETTING_STARTED.md) for a quick start guide by role (developer, content creator, etc.))
 
 See [`INDEX`](#./docs/INDEX.md) for a full index of documentation)
 
 See [`PROJECT_SUMMARY.md`](#./docs/PROJECT_SUMMARY.md) for a final summary of the project and next steps)]
+
+Presents a simple, engaging way for students to learn and track their progress in academic skills topics
+The modular design allows for easy addition of new content and question types
+Each page is designed as a reusable template for different topics, with the quiz content defined in a simple data structure that can be updated by non-developers
+Allows user to complete modules learning modules at their own pace, with progress saved locally and no sign-in required 
+The Dashboard provides a visual overview of achievements and encourages continued learning through gamification elements like XP and badges.
 
 ### How the App Works
 
@@ -91,7 +91,7 @@ Priority fixes and improvements:
 
 ## Contact and License
 
-If you need help or clarification, contact previous repo owner @shiny-umbreon898 on github or email aaronghafoor@gmail.com 
+If you need clarification or a backup of the repo, contact previous owner @shiny-umbreon898 on github or email aaronghafoor5@gmail.com 
 The code in this repository is licensed under the GNU General Public License v3.
 
 Last updated: April 2026
