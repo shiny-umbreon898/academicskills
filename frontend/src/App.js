@@ -1,51 +1,78 @@
-// default React app component from create-react-app
+/**
+ * src/App.js
+ * 
+ * Main application component that handles:
+ * - Application routing and page navigation
+ * - User ID generation and persistence
+ * - Dark mode toggle and preference persistence
+ * - Main layout structure
+ * 
+ * Props: None (root component)
+ * 
+ * State:
+ *   - page (string): Current route ('/', '/page1', '/page2', '/page3')
+ *   - darkMode (boolean): Whether dark mode is active
+ */
+
 import './App.css';
 import React, { useEffect, useState } from 'react';
-
-// cookie helpers
 import { getCookie, setCookie } from './utils/cookies';
+import STORAGE_KEYS from './constants/storageKeys';
 
-// Page Components
+// Page components
 import Dashboard from "./pages/Dashboard";
 import Page1 from "./pages/Page1";
 import Page2 from "./pages/Page2";
 import Page3 from "./pages/Page3";
 
 function App() {
+    // Current page being displayed
     const [page, setPage] = useState('/');
-    // dark mode state: persisted in localStorage
+    
+    // Dark mode preference - persisted to localStorage
     const [darkMode, setDarkMode] = useState(() => {
         try {
-            const saved = localStorage.getItem('darkMode');
+            const saved = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
             return saved ? JSON.parse(saved) : false;
         } catch {
             return false;
         }
     });
 
-    // ensure persistent user id cookie/localStorage exists — app no longer requires login
+    /**
+     * Initialize user ID on first visit
+     * Generates a unique ID if one does not exist
+     * Stores in both cookies and localStorage for compatibility
+     */
     useEffect(() => {
-        let uid = getCookie('user_id');
+        let uid = getCookie(STORAGE_KEYS.USER_ID);
         if (!uid) {
+            // Generate unique ID: timestamp + random number
             uid = `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
-            setCookie('user_id', uid);
+            setCookie(STORAGE_KEYS.USER_ID, uid);
         }
-        // store in localStorage for compatibility with components that expect user_id
-        if (!localStorage.getItem('user_id')) {
-            localStorage.setItem('user_id', uid);
+        // Also store in localStorage for components that expect it
+        if (!localStorage.getItem(STORAGE_KEYS.USER_ID_LOCAL)) {
+            localStorage.setItem(STORAGE_KEYS.USER_ID_LOCAL, uid);
         }
     }, []);
 
-    // persist darkMode preference to localStorage
+    /**
+     * Persist dark mode preference to localStorage
+     * Called whenever darkMode state changes
+     */
     useEffect(() => {
         try {
-            localStorage.setItem('darkMode', JSON.stringify(darkMode));
+            localStorage.setItem(STORAGE_KEYS.DARK_MODE, JSON.stringify(darkMode));
         } catch (e) {
-            // ignore storage errors
+            // Silently ignore localStorage errors
         }
     }, [darkMode]);
 
-    // Apply dark mode class to document root
+    /**
+     * Apply or remove dark mode CSS class on document root
+     * This triggers CSS variable changes for dark styling
+     */
     useEffect(() => {
         if (darkMode) {
             document.documentElement.classList.add('dark-mode');
@@ -54,18 +81,27 @@ function App() {
         }
     }, [darkMode]);
 
-    // function to navigate between pages
+    /**
+     * Navigate to a different page/route
+     * @param {string} p - Route path (e.g., '/', '/page1', '/page2', '/page3')
+     */
     const navigate = (p) => {
         setPage(p);
-        window.scrollTo(0,0);
+        // Scroll to top for better UX when changing pages
+        window.scrollTo(0, 0);
     };
 
-    // toggle dark mode
+    /**
+     * Toggle dark mode on/off
+     */
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
     };
 
-    // render the correct page component based on the current page
+    /**
+     * Render the appropriate page component based on current route
+     * @returns {JSX.Element} The component to display
+     */
     const renderPage = () => {
         switch(page) {
             case '/page1': return <Page1 />;
@@ -81,6 +117,7 @@ function App() {
         <div className="App">
             <h1>Academic Skills</h1>
 
+            {/* Navigation bar with Dashboard link and Dark Mode toggle */}
             <nav>
                 <button onClick={() => navigate('/')}>Dashboard</button>
                 {/* Dark mode toggle button */}
@@ -94,6 +131,7 @@ function App() {
                 </button>
             </nav>
 
+            {/* Main content area - displays current page */}
             <main>
                 {renderPage()}
             </main>
