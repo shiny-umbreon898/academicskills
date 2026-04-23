@@ -44,7 +44,7 @@ Documentation:
 
 ## Next Steps
 
-- To add content, follow `EXTERNAL_CONTENT_GUIDE.md`
-- To add a module, follow `CODEBASE_ARCHITECTURE.md`: Adding a Module
+- To add content, follow [`EXTERNAL_CONTENT_GUIDE.md`](#./docs/EXTERNAL_CONTENT_GUIDE.md)
+- To add a module, follow [`CODEBASE_ARCHITECTURE.md`](#./docs/CODEBASE_ARCHITECTURE.md): Adding a Module
 
 

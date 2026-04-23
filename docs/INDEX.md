@@ -6,35 +6,29 @@ Use this file to find the right documentation for your task
 
 If you are new to the project:
 
-- README.md         Overview and quick start
-- GETTING_STARTED.md Short guide by role
+[`README.md`](#./docs/README.md) : Overview and Quick Start Guide
+[`GETTING_STARTED_.md`](#./docs/GETTING_STARTED.md) : Short guide by role (developer, content creator, etc.)
 
 ## ARCHITECTURE AND CODE STYLE
 
-- CODEBASE_ARCHITECTURE.md  Layout, rules, and conventions
-- DATA_STRUCTURES.md         Data formats and flow
+[`CODEBASE_ARCHITECTURE.md`](#./docs/CODEBASE_ARCHITECTURE.md) : Layout, rules, and conventions
+[`DATA_STRUCTURES.md`](#./docs/DATA_STRUCTURES.md) : Data formats and flow
 
 ## COMPONENTS AND UTILITIES
 
-- COMPONENT_LIBRARY.md       Components, props, utilities
-- src/utils/*.js             Read source for usage details
+[`COMPONENT_LIBRARY.md`](#./docs/COMPONENT_LIBRARY.md) : List of reusable components, their props, and usage examples
+[`src/utils/*.js`](#./src/utils) : Utility functions and helpers (see source for details)
 
 ## CONTENT AND EXTENSION
 
-- EXTERNAL_CONTENT_GUIDE.md  JSON/CSV and H5P integration
+[`EXTERNAL_CONTENT_GUIDE.md`](#./docs/EXTERNAL_CONTENT_GUIDE.md) : JSON/CSV and H5P integration
 
 ## STATUS AND SUMMARY
-
-- REFACTORING_COMPLETE.md    What was done
-- REFACTORING_VERIFICATION.md Checklist
-- PROJECT_SUMMARY.md         Final summary
-
-## QUICK REFERENCES
-
-- QUICK_SUMMARY.md           Very short overview of files and next steps
+      
+[`PROJECT_SUMMARY.md`](#./docs/PROJECT_SUMMARY.md) : Quick summary
 
 ## HOW TO USE
 
 - Pick the document that matches your role
-- Follow the short steps at the top of GETTING_STARTED.md
+- Follow the short steps at the top of [`GETTING_STARTED_.md`](#./docs/GETTING_STARTED.md)
 - Search the documentation folder for any topic

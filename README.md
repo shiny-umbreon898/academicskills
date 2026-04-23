@@ -16,7 +16,7 @@ See [`GETTING_STARTED.md`](#./docs/GETTING_STARTED.md) for a quick start guide b
 
 See [`FEATURES.md`](#./docs/Features.md) for a detailed list of features and design decisions
 
-See [`INDEX`](#./docs/INDEX.md) for a full index of documentation)
+See [`INDEX.md`](#./docs/INDEX.md) for a full index of documentation)
 
 See [`PROJECT_SUMMARY.md`](#./docs/PROJECT_SUMMARY.md) for a final summary of the project and next steps)]
 
