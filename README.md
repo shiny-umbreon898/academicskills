@@ -20,11 +20,11 @@ See [`INDEX.md`](#./docs/INDEX.md) for a full index of documentation)
 
 See [`PROJECT_SUMMARY.md`](#./docs/PROJECT_SUMMARY.md) for a final summary of the project and next steps)]
 
-Presents a simple, engaging way for students to learn and track their progress in academic skills topics
-The modular design allows for easy addition of new content and question types
-Each page is designed as a reusable template for different topics, with the quiz content defined in a simple data structure that can be updated by non-developers
-Allows user to complete modules learning modules at their own pace, with progress saved locally and no sign-in required 
-The Dashboard provides a visual overview of achievements and encourages continued learning through gamification elements like XP and badges.
+Presents a simple, engaging way for students to learn and track their progress in academic skills topics   
+The modular design allows for easy addition of new content and question types  
+Each page is designed as a reusable template for different topics, with the quiz content defined in a simple data structure that can be updated by non-developers   
+Allows user to complete modules learning modules at their own pace, with progress saved locally and no sign-in required   
+The Dashboard provides a visual overview of achievements and encourages continued learning through gamification elements like XP and badges  
 
 ### How the App Works
 
@@ -42,7 +42,7 @@ The Dashboard provides a visual overview of achievements and encourages continue
 
 ### Client-side storage
 
-This project is designed to be easy to run locally: no backend, no sign in. If you need multi-user persistence, move progress saving into a backend API and database.
+This project is designed to be easy to run locally: no backend, no sign in. If you need multi-user persistence, move progress saving into a backend API and database
 
 ## Installation and Quickstart
 
