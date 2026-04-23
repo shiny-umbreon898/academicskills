@@ -84,6 +84,6 @@ frontend/src/
 
 ## WHERE TO READ NEXT
 
-[`COMPONENT_LIBRARY.md`](#./docs/COMPONENT_LIBRARY.md) for component usage.
-[`EXTERNAL_CONTENT_GUIDE.md`](#./docs/EXTERNAL_CONTENT_GUIDE.md) for adding JSON or CSV content.
-[`DATA_STRUCTURES.md`](#./docs/DATA_STRUCTURES.md) for exact data formats.
+[`COMPONENT_LIBRARY.md`](#./docs/COMPONENT_LIBRARY.md) for component usage.   
+[`EXTERNAL_CONTENT_GUIDE.md`](#./docs/EXTERNAL_CONTENT_GUIDE.md) for adding JSON or CSV content.  
+[`DATA_STRUCTURES.md`](#./docs/DATA_STRUCTURES.md) for exact data formats.  
